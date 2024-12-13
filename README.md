@@ -1,4 +1,5 @@
 # mcp-server-qdrant: A Qdrant MCP server
+[![smithery badge](https://smithery.ai/badge/mcp-server-qdrant)](https://smithery.ai/protocol/mcp-server-qdrant)
 
 > The [Model Context Protocol (MCP)](https://modelcontextprotocol.io/introduction) is an open protocol that enables seamless integration between LLM applications and external data sources and tools. Whether you’re building an AI-powered IDE, enhancing a chat interface, or creating custom AI workflows, MCP provides a standardized way to connect LLMs with the context they need.
 
@@ -38,6 +39,14 @@ uv run mcp-server-qdrant \
   --fastembed-model-name "sentence-transformers/all-MiniLM-L6-v2"
 ```
 
+### Installing via Smithery
+
+To install Qdrant MCP Server for Claude Desktop automatically via [Smithery](https://smithery.ai/protocol/mcp-server-qdrant):
+
+```bash
+npx @smithery/cli install mcp-server-qdrant --client claude
+```
+
 ## Usage with Claude Desktop
 
 To use this server with the Claude Desktop app, add the following configuration to the "mcpServers" section of your `claude_desktop_config.json`:
@@ -69,14 +78,38 @@ By default, the server will use the `sentence-transformers/all-MiniLM-L6-v2` emb
 For the time being, only [FastEmbed](https://qdrant.github.io/fastembed/) models are supported, and you can change it
 by passing the `--fastembed-model-name` argument to the server.
 
-### Environment Variables
+### Using the local mode of Qdrant
+
+To use a local mode of Qdrant, you can specify the path to the database using the `--qdrant-local-path` argument:
+
+```json
+{
+  "qdrant": {
+    "command": "uvx",
+    "args": [
+      "mcp-server-qdrant", 
+      "--qdrant-local-path",
+      "/path/to/qdrant/database",
+      "--collection-name",
+      "your_collection_name"
+    ]
+  }
+}
+```
+
+It will run Qdrant local mode inside the same process as the MCP server. Although it is not recommended for production.
+
+## Environment Variables
 
 The configuration of the server can be also done using environment variables:
 
-- `QDRANT_URL`: URL of the Qdrant server
+- `QDRANT_URL`: URL of the Qdrant server, e.g. `http://localhost:6333`
 - `QDRANT_API_KEY`: API key for the Qdrant server
 - `COLLECTION_NAME`: Name of the collection to use
 - `FASTEMBED_MODEL_NAME`: Name of the FastEmbed model to use
+- `QDRANT_LOCAL_PATH`: Path to the local Qdrant database
+
+You cannot provide `QDRANT_URL` and `QDRANT_LOCAL_PATH` at the same time.
 
 ## License
 
