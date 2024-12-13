@@ -40,10 +40,14 @@ class QdrantConnector:
 
     async def find_memories(self, query: str) -> list[str]:
         """
-        Find memories in the Qdrant collection.
+        Find memories in the Qdrant collection. If there are no memories found, an empty list is returned.
         :param query: The query to use for the search.
         :return: A list of memories found.
         """
+        collection_exists = await self._client.collection_exists(self._collection_name)
+        if not collection_exists:
+            return []
+
         search_results = await self._client.query(
             self._collection_name,
             query_text=query,
