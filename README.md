@@ -27,14 +27,6 @@ It acts as a semantic memory layer on top of the Qdrant database.
 
 ## Installation
 
-### Installing via Smithery
-
-To install Qdrant MCP Server for Claude Desktop automatically via [Smithery](https://smithery.ai/protocol/mcp-server-qdrant):
-
-```bash
-npx @smithery/cli install mcp-server-qdrant --client claude
-```
-
 ### Using uv (recommended)
 
 When using [`uv`](https://docs.astral.sh/uv/) no specific installation is needed to directly run *mcp-server-qdrant*.
@@ -45,6 +37,14 @@ uv run mcp-server-qdrant \
   --qdrant-api-key "your_api_key" \
   --collection-name "my_collection" \
   --fastembed-model-name "sentence-transformers/all-MiniLM-L6-v2"
+```
+
+### Installing via Smithery
+
+To install Qdrant MCP Server for Claude Desktop automatically via [Smithery](https://smithery.ai/protocol/mcp-server-qdrant):
+
+```bash
+npx @smithery/cli install mcp-server-qdrant --client claude
 ```
 
 ## Usage with Claude Desktop
