@@ -78,7 +78,7 @@ By default, the server will use the `sentence-transformers/all-MiniLM-L6-v2` emb
 For the time being, only [FastEmbed](https://qdrant.github.io/fastembed/) models are supported, and you can change it
 by passing the `--fastembed-model-name` argument to the server.
 
-### Using a local Qdrant database
+### Using the local mode of Qdrant
 
 To use a local mode of Qdrant, you can specify the path to the database using the `--qdrant-local-path` argument:
 
