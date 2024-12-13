@@ -82,10 +82,13 @@ by passing the `--fastembed-model-name` argument to the server.
 
 The configuration of the server can be also done using environment variables:
 
-- `QDRANT_URL`: URL of the Qdrant server
+- `QDRANT_URL`: URL of the Qdrant server, e.g. `http://localhost:6333`
 - `QDRANT_API_KEY`: API key for the Qdrant server
 - `COLLECTION_NAME`: Name of the collection to use
 - `FASTEMBED_MODEL_NAME`: Name of the FastEmbed model to use
+- `QDRANT_LOCAL_PATH`: Path to the local Qdrant database
+
+You cannot provide `QDRANT_URL` and `QDRANT_LOCAL_PATH` at the same time.
 
 ## License
 

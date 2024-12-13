@@ -9,23 +9,25 @@ class QdrantConnector:
     :param qdrant_api_key: The API key to use for the Qdrant server.
     :param collection_name: The name of the collection to use.
     :param fastembed_model_name: The name of the FastEmbed model to use.
+    :param qdrant_local_path: The path to the storage directory for the Qdrant client, if local mode is used.
     """
 
     def __init__(
         self,
-        qdrant_url: str,
+        qdrant_url: Optional[str],
         qdrant_api_key: Optional[str],
         collection_name: str,
         fastembed_model_name: str,
+        qdrant_local_path: Optional[str] = None,
     ):
-        self._qdrant_url = qdrant_url.rstrip("/")
+        self._qdrant_url = qdrant_url.rstrip("/") if qdrant_url else None
         self._qdrant_api_key = qdrant_api_key
         self._collection_name = collection_name
         self._fastembed_model_name = fastembed_model_name
         # For the time being, FastEmbed models are the only supported ones.
         # A list of all available models can be found here:
         # https://qdrant.github.io/fastembed/examples/Supported_Models/
-        self._client = AsyncQdrantClient(qdrant_url, api_key=qdrant_api_key)
+        self._client = AsyncQdrantClient(location=qdrant_url, api_key=qdrant_api_key, path=qdrant_local_path)
         self._client.set_model(fastembed_model_name)
 
     async def store_memory(self, information: str):

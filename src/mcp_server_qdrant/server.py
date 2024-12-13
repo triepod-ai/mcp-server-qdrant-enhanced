@@ -12,10 +12,11 @@ from .qdrant import QdrantConnector
 
 
 def serve(
-    qdrant_url: str,
+    qdrant_url: Optional[str],
     qdrant_api_key: Optional[str],
     collection_name: str,
     fastembed_model_name: str,
+    qdrant_local_path: Optional[str] = None,
 ) -> Server:
     """
     Instantiate the server and configure tools to store and find memories in Qdrant.
@@ -23,11 +24,12 @@ def serve(
     :param qdrant_api_key: The API key to use for the Qdrant server.
     :param collection_name: The name of the collection to use.
     :param fastembed_model_name: The name of the FastEmbed model to use.
+    :param qdrant_local_path: The path to the storage directory for the Qdrant client, if local mode is used.
     """
     server = Server("qdrant")
 
     qdrant = QdrantConnector(
-        qdrant_url, qdrant_api_key, collection_name, fastembed_model_name
+        qdrant_url, qdrant_api_key, collection_name, fastembed_model_name, qdrant_local_path
     )
 
     @server.list_tools()
@@ -112,7 +114,7 @@ def serve(
 @click.option(
     "--qdrant-url",
     envvar="QDRANT_URL",
-    required=True,
+    required=False,
     help="Qdrant URL",
 )
 @click.option(
@@ -134,12 +136,23 @@ def serve(
     help="FastEmbed model name",
     default="sentence-transformers/all-MiniLM-L6-v2",
 )
+@click.option(
+    "--qdrant-local-path",
+    envvar="QDRANT_LOCAL_PATH",
+    required=False,
+    help="Qdrant local path",
+)
 def main(
-    qdrant_url: str,
+    qdrant_url: Optional[str],
     qdrant_api_key: str,
     collection_name: Optional[str],
     fastembed_model_name: str,
+    qdrant_local_path: Optional[str],
 ):
+    # XOR of url and local path, since we accept only one of them
+    if not (bool(qdrant_url) ^ bool(qdrant_local_path)):
+        raise ValueError("Exactly one of qdrant-url or qdrant-local-path must be provided")
+
     async def _run():
         async with mcp.server.stdio.stdio_server() as (read_stream, write_stream):
             server = serve(
@@ -147,6 +160,7 @@ def main(
                 qdrant_api_key,
                 collection_name,
                 fastembed_model_name,
+                qdrant_local_path,
             )
             await server.run(
                 read_stream,
