@@ -5,6 +5,8 @@
 
 This repository is an example of how to create a MCP server for [Qdrant](https://qdrant.tech/), a vector search engine.
 
+<a href="https://glama.ai/mcp/servers/9ejy5scw5i"><img width="380" height="200" src="https://glama.ai/mcp/servers/9ejy5scw5i/badge" alt="mcp-server-qdrant MCP server" /></a>
+
 ## Overview
 
 A basic Model Context Protocol server for keeping and retrieving memories in the Qdrant vector search engine.
