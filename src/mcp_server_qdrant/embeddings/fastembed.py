@@ -1,5 +1,6 @@
-from typing import List
 import asyncio
+from typing import List
+
 from fastembed import TextEmbedding
 
 from .base import EmbeddingProvider

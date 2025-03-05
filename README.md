@@ -114,13 +114,13 @@ You cannot provide `QDRANT_URL` and `QDRANT_LOCAL_PATH` at the same time.
 
 ## Contributing
 
-If you have suggestions for how mcp-server-qdrant could be improved, or want to report a bug, open an issue! 
+If you have suggestions for how mcp-server-qdrant could be improved, or want to report a bug, open an issue!
 We'd love all and any contributions.
 
 ### Testing `mcp-server-qdrant` locally
 
-The [MCP inspector](https://github.com/modelcontextprotocol/inspector) is a developer tool for testing and debugging MCP 
-servers. It runs both a client UI (default port 5173) and an MCP proxy server (default port 3000). Open the client UI in 
+The [MCP inspector](https://github.com/modelcontextprotocol/inspector) is a developer tool for testing and debugging MCP
+servers. It runs both a client UI (default port 5173) and an MCP proxy server (default port 3000). Open the client UI in
 your browser to use the inspector.
 
 ```shell

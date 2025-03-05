@@ -1,15 +1,14 @@
+import asyncio
 from typing import Optional
 
-from mcp.server import Server, NotificationOptions
+import click
+import mcp
+import mcp.types as types
+from mcp.server import NotificationOptions, Server
 from mcp.server.models import InitializationOptions
 
-import click
-import mcp.types as types
-import asyncio
-import mcp
-
-from .qdrant import QdrantConnector
 from .embeddings.factory import create_embedding_provider
+from .qdrant import QdrantConnector
 
 
 def serve(
@@ -33,12 +32,15 @@ def serve(
 
     # Create the embedding provider
     embedding_provider = create_embedding_provider(
-        embedding_provider_type,
-        model_name=embedding_model_name
+        embedding_provider_type, model_name=embedding_model_name
     )
 
     qdrant = QdrantConnector(
-        qdrant_url, qdrant_api_key, collection_name, embedding_provider, qdrant_local_path
+        qdrant_url,
+        qdrant_api_key,
+        collection_name,
+        embedding_provider,
+        qdrant_local_path,
     )
 
     @server.list_tools()
@@ -169,7 +171,9 @@ def main(
 ):
     # XOR of url and local path, since we accept only one of them
     if not (bool(qdrant_url) ^ bool(qdrant_local_path)):
-        raise ValueError("Exactly one of qdrant-url or qdrant-local-path must be provided")
+        raise ValueError(
+            "Exactly one of qdrant-url or qdrant-local-path must be provided"
+        )
 
     async def _run():
         async with mcp.server.stdio.stdio_server() as (read_stream, write_stream):

@@ -1,5 +1,7 @@
-from typing import Optional, List
+from typing import Optional
+
 from qdrant_client import AsyncQdrantClient, models
+
 from .embeddings.base import EmbeddingProvider
 
 
@@ -25,7 +27,9 @@ class QdrantConnector:
         self._qdrant_api_key = qdrant_api_key
         self._collection_name = collection_name
         self._embedding_provider = embedding_provider
-        self._client = AsyncQdrantClient(location=qdrant_url, api_key=qdrant_api_key, path=qdrant_local_path)
+        self._client = AsyncQdrantClient(
+            location=qdrant_url, api_key=qdrant_api_key, path=qdrant_local_path
+        )
 
     async def _ensure_collection_exists(self):
         """Ensure that the collection exists, creating it if necessary."""
