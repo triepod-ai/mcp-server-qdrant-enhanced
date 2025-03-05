@@ -1,3 +1,4 @@
+import uuid
 from typing import Optional
 
 from qdrant_client import AsyncQdrantClient, models
@@ -40,12 +41,16 @@ class QdrantConnector:
             sample_vector = await self._embedding_provider.embed_query("sample text")
             vector_size = len(sample_vector)
 
+            # Use the vector name as defined in the embedding provider
+            vector_name = self._embedding_provider.get_vector_name()
             await self._client.create_collection(
                 collection_name=self._collection_name,
-                vectors_config=models.VectorParams(
-                    size=vector_size,
-                    distance=models.Distance.COSINE,
-                ),
+                vectors_config={
+                    vector_name: models.VectorParams(
+                        size=vector_size,
+                        distance=models.Distance.COSINE,
+                    )
+                },
             )
 
     async def store_memory(self, information: str):
@@ -59,12 +64,13 @@ class QdrantConnector:
         embeddings = await self._embedding_provider.embed_documents([information])
 
         # Add to Qdrant
+        vector_name = self._embedding_provider.get_vector_name()
         await self._client.upsert(
             collection_name=self._collection_name,
             points=[
                 models.PointStruct(
-                    id=hash(information),  # Simple hash as ID
-                    vector=embeddings[0],
+                    id=uuid.uuid4().hex,
+                    vector={vector_name: embeddings[0]},
                     payload={"document": information},
                 )
             ],
@@ -82,11 +88,12 @@ class QdrantConnector:
 
         # Embed the query
         query_vector = await self._embedding_provider.embed_query(query)
+        vector_name = self._embedding_provider.get_vector_name()
 
         # Search in Qdrant
         search_results = await self._client.search(
             collection_name=self._collection_name,
-            query_vector=query_vector,
+            query_vector=models.NamedVector(name=vector_name, vector=query_vector),
             limit=10,
         )
 

@@ -1,4 +1,5 @@
 import asyncio
+import importlib.metadata
 from typing import Optional
 
 import click
@@ -9,6 +10,15 @@ from mcp.server.models import InitializationOptions
 
 from .embeddings.factory import create_embedding_provider
 from .qdrant import QdrantConnector
+
+
+def get_package_version() -> str:
+    """Get the package version using importlib.metadata."""
+    try:
+        return importlib.metadata.version("mcp-server-qdrant")
+    except importlib.metadata.PackageNotFoundError:
+        # Fall back to a default version if package is not installed
+        return "0.0.0"
 
 
 def serve(
@@ -141,6 +151,13 @@ def serve(
     help="Collection name",
 )
 @click.option(
+    "--fastembed-model-name",
+    envvar="FASTEMBED_MODEL_NAME",
+    required=False,
+    help="FastEmbed model name",
+    default="sentence-transformers/all-MiniLM-L6-v2",
+)
+@click.option(
     "--embedding-provider",
     envvar="EMBEDDING_PROVIDER",
     required=False,
@@ -165,6 +182,7 @@ def main(
     qdrant_url: Optional[str],
     qdrant_api_key: str,
     collection_name: Optional[str],
+    fastembed_model_name: Optional[str],
     embedding_provider: str,
     embedding_model: str,
     qdrant_local_path: Optional[str],
@@ -173,6 +191,14 @@ def main(
     if not (bool(qdrant_url) ^ bool(qdrant_local_path)):
         raise ValueError(
             "Exactly one of qdrant-url or qdrant-local-path must be provided"
+        )
+
+    # Warn if fastembed_model_name is provided, as this is going to be deprecated
+    if fastembed_model_name:
+        click.echo(
+            "Warning: --fastembed-model-name parameter is deprecated and will be removed in a future version. "
+            "Please use --embedding-provider and --embedding-model instead",
+            err=True,
         )
 
     async def _run():
@@ -190,7 +216,7 @@ def main(
                 write_stream,
                 InitializationOptions(
                     server_name="qdrant",
-                    server_version="0.5.1",
+                    server_version=get_package_version(),
                     capabilities=server.get_capabilities(
                         notification_options=NotificationOptions(),
                         experimental_capabilities={},

@@ -35,3 +35,11 @@ class FastEmbedProvider(EmbeddingProvider):
             None, lambda: list(self.embedding_model.query_embed([query]))
         )
         return embeddings[0].tolist()
+
+    def get_vector_name(self) -> str:
+        """
+        Return the name of the vector for the Qdrant collection.
+        Important: This is compatible with the FastEmbed logic used before 0.6.0.
+        """
+        model_name = self.embedding_model.model_name.split("/")[-1].lower()
+        return f"fast-{model_name}"
