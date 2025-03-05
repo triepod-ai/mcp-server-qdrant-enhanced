@@ -1,12 +1,11 @@
+import asyncio
 from typing import Optional
 
-from mcp.server import Server, NotificationOptions
-from mcp.server.models import InitializationOptions
-
 import click
-import mcp.types as types
-import asyncio
 import mcp
+import mcp.types as types
+from mcp.server import NotificationOptions, Server
+from mcp.server.models import InitializationOptions
 
 from .qdrant import QdrantConnector
 
@@ -29,7 +28,11 @@ def serve(
     server = Server("qdrant")
 
     qdrant = QdrantConnector(
-        qdrant_url, qdrant_api_key, collection_name, fastembed_model_name, qdrant_local_path
+        qdrant_url,
+        qdrant_api_key,
+        collection_name,
+        fastembed_model_name,
+        qdrant_local_path,
     )
 
     @server.list_tools()
@@ -151,7 +154,9 @@ def main(
 ):
     # XOR of url and local path, since we accept only one of them
     if not (bool(qdrant_url) ^ bool(qdrant_local_path)):
-        raise ValueError("Exactly one of qdrant-url or qdrant-local-path must be provided")
+        raise ValueError(
+            "Exactly one of qdrant-url or qdrant-local-path must be provided"
+        )
 
     async def _run():
         async with mcp.server.stdio.stdio_server() as (read_stream, write_stream):
