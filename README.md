@@ -36,7 +36,7 @@ uv run mcp-server-qdrant \
   --qdrant-url "http://localhost:6333" \
   --qdrant-api-key "your_api_key" \
   --collection-name "my_collection" \
-  --fastembed-model-name "sentence-transformers/all-MiniLM-L6-v2"
+  --embedding-model "sentence-transformers/all-MiniLM-L6-v2"
 ```
 
 ### Installing via Smithery
@@ -76,7 +76,7 @@ This MCP server will automatically create a collection with the specified name i
 
 By default, the server will use the `sentence-transformers/all-MiniLM-L6-v2` embedding model to encode memories.
 For the time being, only [FastEmbed](https://qdrant.github.io/fastembed/) models are supported, and you can change it
-by passing the `--fastembed-model-name` argument to the server.
+by passing the `--embedding-model` argument to the server.
 
 ### Using the local mode of Qdrant
 
@@ -106,10 +106,30 @@ The configuration of the server can be also done using environment variables:
 - `QDRANT_URL`: URL of the Qdrant server, e.g. `http://localhost:6333`
 - `QDRANT_API_KEY`: API key for the Qdrant server
 - `COLLECTION_NAME`: Name of the collection to use
-- `FASTEMBED_MODEL_NAME`: Name of the FastEmbed model to use
+- `EMBEDDING_MODEL`: Name of the embedding model to use
+- `EMBEDDING_PROVIDER`: Embedding provider to use (currently only "fastembed" is supported)
 - `QDRANT_LOCAL_PATH`: Path to the local Qdrant database
 
 You cannot provide `QDRANT_URL` and `QDRANT_LOCAL_PATH` at the same time.
+
+## Contributing
+
+If you have suggestions for how mcp-server-qdrant could be improved, or want to report a bug, open an issue! 
+We'd love all and any contributions.
+
+### Testing `mcp-server-qdrant` locally
+
+The [MCP inspector](https://github.com/modelcontextprotocol/inspector) is a developer tool for testing and debugging MCP 
+servers. It runs both a client UI (default port 5173) and an MCP proxy server (default port 3000). Open the client UI in 
+your browser to use the inspector.
+
+```shell
+npx @modelcontextprotocol/inspector uv run mcp-server-qdrant \
+  --collection-name test \
+  --qdrant-local-path /tmp/qdrant-local-test
+```
+
+Once started, open your browser to http://localhost:5173 to access the inspector interface.
 
 ## License
 
