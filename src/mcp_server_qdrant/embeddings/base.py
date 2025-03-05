@@ -14,3 +14,8 @@ class EmbeddingProvider(ABC):
     async def embed_query(self, query: str) -> List[float]:
         """Embed a query into a vector."""
         pass
+
+    @abstractmethod
+    def get_vector_name(self) -> str:
+        """Get the name of the vector for the Qdrant collection."""
+        pass
