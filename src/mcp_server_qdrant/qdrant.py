@@ -1,5 +1,6 @@
 from typing import Optional
-from qdrant_client import AsyncQdrantClient, models
+
+from qdrant_client import AsyncQdrantClient
 
 
 class QdrantConnector:
@@ -27,7 +28,9 @@ class QdrantConnector:
         # For the time being, FastEmbed models are the only supported ones.
         # A list of all available models can be found here:
         # https://qdrant.github.io/fastembed/examples/Supported_Models/
-        self._client = AsyncQdrantClient(location=qdrant_url, api_key=qdrant_api_key, path=qdrant_local_path)
+        self._client = AsyncQdrantClient(
+            location=qdrant_url, api_key=qdrant_api_key, path=qdrant_local_path
+        )
         self._client.set_model(fastembed_model_name)
 
     async def store_memory(self, information: str):

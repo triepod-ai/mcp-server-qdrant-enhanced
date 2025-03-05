@@ -56,10 +56,10 @@ To use this server with the Claude Desktop app, add the following configuration 
   "qdrant": {
     "command": "uvx",
     "args": [
-      "mcp-server-qdrant", 
-      "--qdrant-url", 
+      "mcp-server-qdrant",
+      "--qdrant-url",
       "http://localhost:6333",
-      "--qdrant-api-key", 
+      "--qdrant-api-key",
       "your_api_key",
       "--collection-name",
       "your_collection_name"
@@ -68,8 +68,8 @@ To use this server with the Claude Desktop app, add the following configuration 
 }
 ```
 
-Replace `http://localhost:6333`, `your_api_key` and `your_collection_name` with your Qdrant server URL, Qdrant API key 
-and collection name, respectively. The use of API key is optional, but recommended for security reasons, and depends on 
+Replace `http://localhost:6333`, `your_api_key` and `your_collection_name` with your Qdrant server URL, Qdrant API key
+and collection name, respectively. The use of API key is optional, but recommended for security reasons, and depends on
 the Qdrant server configuration.
 
 This MCP server will automatically create a collection with the specified name if it doesn't exist.
@@ -87,7 +87,7 @@ To use a local mode of Qdrant, you can specify the path to the database using th
   "qdrant": {
     "command": "uvx",
     "args": [
-      "mcp-server-qdrant", 
+      "mcp-server-qdrant",
       "--qdrant-local-path",
       "/path/to/qdrant/database",
       "--collection-name",
@@ -113,6 +113,6 @@ You cannot provide `QDRANT_URL` and `QDRANT_LOCAL_PATH` at the same time.
 
 ## License
 
-This MCP server is licensed under the MIT License. This means you are free to use, modify, and distribute the software, 
-subject to the terms and conditions of the MIT License. For more details, please see the LICENSE file in the project 
+This MCP server is licensed under the MIT License. This means you are free to use, modify, and distribute the software,
+subject to the terms and conditions of the MIT License. For more details, please see the LICENSE file in the project
 repository.
