@@ -4,6 +4,7 @@ version = "0.6.0"
 description = "MCP server for retrieving context from a Qdrant vector database"
 readme = "README.md"
 requires-python = ">=3.10"
+license = "Apache-2.0"
 dependencies = [
     "mcp>=0.9.1",
     "qdrant-client[fastembed]>=1.12.0",
