@@ -1,5 +1,4 @@
 import asyncio
-import importlib.metadata
 from typing import Optional
 
 import click
@@ -8,17 +7,10 @@ import mcp.types as types
 from mcp.server import NotificationOptions, Server
 from mcp.server.models import InitializationOptions
 
+from .custom_server import QdrantMCPServer
 from .embeddings.factory import create_embedding_provider
+from .helper import get_package_version
 from .qdrant import QdrantConnector
-
-
-def get_package_version() -> str:
-    """Get the package version using importlib.metadata."""
-    try:
-        return importlib.metadata.version("mcp-server-qdrant")
-    except importlib.metadata.PackageNotFoundError:
-        # Fall back to a default version if package is not installed
-        return "0.0.0"
 
 
 def serve(
@@ -28,84 +20,48 @@ def serve(
     Instantiate the server and configure tools to store and find memories in Qdrant.
     :param qdrant_connector: An instance of QdrantConnector to use for storing and retrieving memories.
     """
-    server = Server("qdrant")
+    server = QdrantMCPServer("qdrant")
 
-    @server.list_tools()
-    async def handle_list_tools() -> list[types.Tool]:
+    @server.register_tool(
+        name="qdrant-store-memory",
+        description=(
+            "Keep the memory for later use, when you are asked to remember something."
+        ),
+    )
+    async def store_memory(information: str):
         """
-        Return the list of tools that the server provides. By default, there are two
-        tools: one to store memories and another to find them. Finding the memories is not
-        implemented as a resource, as it requires a query to be passed and resources point
-        to a very specific piece of data.
+        Store a memory in Qdrant.
+        :param information: The information to store.
         """
-        return [
-            types.Tool(
-                name="qdrant-store-memory",
-                description=(
-                    "Keep the memory for later use, when you are asked to remember something."
-                ),
-                inputSchema={
-                    "type": "object",
-                    "properties": {
-                        "information": {
-                            "type": "string",
-                        },
-                    },
-                    "required": ["information"],
-                },
-            ),
-            types.Tool(
-                name="qdrant-find-memories",
-                description=(
-                    "Look up memories in Qdrant. Use this tool when you need to: \n"
-                    " - Find memories by their content \n"
-                    " - Access memories for further analysis \n"
-                    " - Get some personal information about the user"
-                ),
-                inputSchema={
-                    "type": "object",
-                    "properties": {
-                        "query": {
-                            "type": "string",
-                            "description": "The query to search for",
-                        }
-                    },
-                    "required": ["query"],
-                },
-            ),
+        nonlocal qdrant_connector
+        await qdrant_connector.store_memory(information)
+        return [types.TextContent(type="text", text=f"Remembered: {information}")]
+
+    @server.register_tool(
+        name="qdrant-find-memories",
+        description=(
+            "Look up memories in Qdrant. Use this tool when you need to: \n"
+            " - Find memories by their content \n"
+            " - Access memories for further analysis \n"
+            " - Get some personal information about the user"
+        ),
+    )
+    async def find_memories(query: str):
+        """
+        Find memories in Qdrant.
+        :param query: The query to use for the search.
+        :return: A list of memories found.
+        """
+        nonlocal qdrant_connector
+        memories = await qdrant_connector.find_memories(query)
+        content = [
+            types.TextContent(type="text", text=f"Memories for the query '{query}'"),
         ]
-
-    @server.call_tool()
-    async def handle_tool_call(
-        name: str, arguments: dict | None
-    ) -> list[types.TextContent | types.ImageContent | types.EmbeddedResource]:
-        if name not in ["qdrant-store-memory", "qdrant-find-memories"]:
-            raise ValueError(f"Unknown tool: {name}")
-
-        if name == "qdrant-store-memory":
-            if not arguments or "information" not in arguments:
-                raise ValueError("Missing required argument 'information'")
-            information = arguments["information"]
-            await qdrant_connector.store_memory(information)
-            return [types.TextContent(type="text", text=f"Remembered: {information}")]
-
-        if name == "qdrant-find-memories":
-            if not arguments or "query" not in arguments:
-                raise ValueError("Missing required argument 'query'")
-            query = arguments["query"]
-            memories = await qdrant_connector.find_memories(query)
-            content = [
-                types.TextContent(
-                    type="text", text=f"Memories for the query '{query}'"
-                ),
-            ]
-            for memory in memories:
-                content.append(
-                    types.TextContent(type="text", text=f"<memory>{memory}</memory>")
-                )
-            return content
-
-        raise ValueError(f"Unknown tool: {name}")
+        for memory in memories:
+            content.append(
+                types.TextContent(type="text", text=f"<memory>{memory}</memory>")
+            )
+        return content
 
     return server
 

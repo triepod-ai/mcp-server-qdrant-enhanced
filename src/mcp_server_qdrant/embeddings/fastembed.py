@@ -7,14 +7,12 @@ from .base import EmbeddingProvider
 
 
 class FastEmbedProvider(EmbeddingProvider):
-    """FastEmbed implementation of the embedding provider."""
+    """
+    FastEmbed implementation of the embedding provider.
+    :param model_name: The name of the FastEmbed model to use.
+    """
 
     def __init__(self, model_name: str):
-        """
-        Initialize the FastEmbed provider.
-
-        :param model_name: The name of the FastEmbed model to use.
-        """
         self.model_name = model_name
         self.embedding_model = TextEmbedding(model_name)
 
