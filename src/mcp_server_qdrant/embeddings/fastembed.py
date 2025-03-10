@@ -3,7 +3,7 @@ from typing import List
 
 from fastembed import TextEmbedding
 
-from .base import EmbeddingProvider
+from mcp_server_qdrant.embeddings.base import EmbeddingProvider
 
 
 class FastEmbedProvider(EmbeddingProvider):
