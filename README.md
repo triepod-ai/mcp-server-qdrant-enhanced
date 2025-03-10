@@ -1,7 +1,10 @@
 # mcp-server-qdrant: A Qdrant MCP server
 [![smithery badge](https://smithery.ai/badge/mcp-server-qdrant)](https://smithery.ai/protocol/mcp-server-qdrant)
 
-> The [Model Context Protocol (MCP)](https://modelcontextprotocol.io/introduction) is an open protocol that enables seamless integration between LLM applications and external data sources and tools. Whether you’re building an AI-powered IDE, enhancing a chat interface, or creating custom AI workflows, MCP provides a standardized way to connect LLMs with the context they need.
+> The [Model Context Protocol (MCP)](https://modelcontextprotocol.io/introduction) is an open protocol that enables
+> seamless integration between LLM applications and external data sources and tools. Whether you’re building an
+> AI-powered IDE, enhancing a chat interface, or creating custom AI workflows, MCP provides a standardized way to
+> connect LLMs with the context they need.
 
 This repository is an example of how to create a MCP server for [Qdrant](https://qdrant.tech/), a vector search engine.
 
@@ -27,18 +30,18 @@ It acts as a semantic memory layer on top of the Qdrant database.
      - `query` (string): Query to retrieve a memory
    - Returns: Memories stored in the Qdrant database as separate messages
 
-## Installation
+## Installation in Claude Desktop
 
-### Using uv (recommended)
+### Using mcp (recommended)
 
-When using [`uv`](https://docs.astral.sh/uv/) no specific installation is needed to directly run *mcp-server-qdrant*.
+When using [`mcp`](https://github.com/modelcontextprotocol/python-sdk) no specific installation is needed to directly run *mcp-server-qdrant*.
 
 ```shell
-uv run mcp-server-qdrant \
-  --qdrant-url "http://localhost:6333" \
-  --qdrant-api-key "your_api_key" \
-  --collection-name "my_collection" \
-  --embedding-model "sentence-transformers/all-MiniLM-L6-v2"
+mcp install src/mcp_server_qdrant/server.py \
+  -v QDRANT_URL="http://localhost:6333" \
+  -v QDRANT_API_KEY="your_api_key" \
+  -v COLLECTION_NAME="my_collection" \
+  -v EMBEDDING_MODEL="sentence-transformers/all-MiniLM-L6-v2"
 ```
 
 ### Installing via Smithery
@@ -49,70 +52,68 @@ To install Qdrant MCP Server for Claude Desktop automatically via [Smithery](htt
 npx @smithery/cli install mcp-server-qdrant --client claude
 ```
 
-## Usage with Claude Desktop
+### Manual configuration
 
-To use this server with the Claude Desktop app, add the following configuration to the "mcpServers" section of your `claude_desktop_config.json`:
+To use this server with the Claude Desktop app, add the following configuration to the "mcpServers" section of your
+`claude_desktop_config.json`:
 
 ```json
 {
   "qdrant": {
     "command": "uvx",
-    "args": [
-      "mcp-server-qdrant",
-      "--qdrant-url",
-      "http://localhost:6333",
-      "--qdrant-api-key",
-      "your_api_key",
-      "--collection-name",
-      "your_collection_name"
-    ]
+    "args": ["mcp-server-qdrant"],
+    "env": {
+      "QDRANT_URL": "http://localhost:6333",
+      "QDRANT_API_KEY": "your_api_key",
+      "COLLECTION_NAME": "your_collection_name",
+      "EMBEDDING_MODEL": "sentence-transformers/all-MiniLM-L6-v2"
+    }
   }
 }
 ```
 
-Replace `http://localhost:6333`, `your_api_key` and `your_collection_name` with your Qdrant server URL, Qdrant API key
-and collection name, respectively. The use of API key is optional, but recommended for security reasons, and depends on
-the Qdrant server configuration.
+For local Qdrant mode:
+
+```json
+{
+  "qdrant": {
+    "command": "uvx",
+    "args": ["mcp-server-qdrant"],
+    "env": {
+      "QDRANT_LOCAL_PATH": "/path/to/qdrant/database",
+      "COLLECTION_NAME": "your_collection_name",
+      "EMBEDDING_MODEL": "sentence-transformers/all-MiniLM-L6-v2"
+    }
+  }
+}
+```
 
 This MCP server will automatically create a collection with the specified name if it doesn't exist.
 
 By default, the server will use the `sentence-transformers/all-MiniLM-L6-v2` embedding model to encode memories.
-For the time being, only [FastEmbed](https://qdrant.github.io/fastembed/) models are supported, and you can change it
-by passing the `--embedding-model` argument to the server.
+For the time being, only [FastEmbed](https://qdrant.github.io/fastembed/) models are supported.
 
-### Using the local mode of Qdrant
+### Support for other tools
 
-To use a local mode of Qdrant, you can specify the path to the database using the `--qdrant-local-path` argument:
-
-```json
-{
-  "qdrant": {
-    "command": "uvx",
-    "args": [
-      "mcp-server-qdrant",
-      "--qdrant-local-path",
-      "/path/to/qdrant/database",
-      "--collection-name",
-      "your_collection_name"
-    ]
-  }
-}
-```
-
-It will run Qdrant local mode inside the same process as the MCP server. Although it is not recommended for production.
+This MCP server can be used with any MCP-compatible client. For example, you can use it with
+[Cursor](https://docs.cursor.com/context/model-context-protocol), which provides built-in support for the Model Context
+Protocol.
 
 ## Environment Variables
 
-The configuration of the server can be also done using environment variables:
+The configuration of the server is done using environment variables:
 
 - `QDRANT_URL`: URL of the Qdrant server, e.g. `http://localhost:6333`
-- `QDRANT_API_KEY`: API key for the Qdrant server
-- `COLLECTION_NAME`: Name of the collection to use
-- `EMBEDDING_MODEL`: Name of the embedding model to use
+- `QDRANT_API_KEY`: API key for the Qdrant server (optional, depends on Qdrant server configuration)
+- `COLLECTION_NAME`: Name of the collection to use (required)
+- `EMBEDDING_MODEL`: Name of the embedding model to use (default: `sentence-transformers/all-MiniLM-L6-v2`)
 - `EMBEDDING_PROVIDER`: Embedding provider to use (currently only "fastembed" is supported)
-- `QDRANT_LOCAL_PATH`: Path to the local Qdrant database
+- `QDRANT_LOCAL_PATH`: Path to the local Qdrant database (alternative to `QDRANT_URL`)
 
-You cannot provide `QDRANT_URL` and `QDRANT_LOCAL_PATH` at the same time.
+Note: You cannot provide both `QDRANT_URL` and `QDRANT_LOCAL_PATH` at the same time.
+
+> [!IMPORTANT]
+> Command-line arguments are not supported anymore! Please use environment variables for all configuration.
 
 ## Contributing
 
@@ -126,9 +127,8 @@ servers. It runs both a client UI (default port 5173) and an MCP proxy server (d
 your browser to use the inspector.
 
 ```shell
-npx @modelcontextprotocol/inspector uv run mcp-server-qdrant \
-  --collection-name test \
-  --qdrant-local-path /tmp/qdrant-local-test
+QDRANT_URL=":memory:" COLLECTION_NAME="test" \
+mcp dev src/mcp_server_qdrant/server.py
 ```
 
 Once started, open your browser to http://localhost:5173 to access the inspector interface.

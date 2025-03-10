@@ -1,5 +1,4 @@
 import logging
-import os
 from contextlib import asynccontextmanager
 from typing import AsyncIterator, List
 
@@ -8,20 +7,9 @@ from mcp.server.fastmcp import Context, FastMCP
 
 from mcp_server_qdrant.embeddings.factory import create_embedding_provider
 from mcp_server_qdrant.qdrant import QdrantConnector
-from mcp_server_qdrant.settings import (
-    EmbeddingProviderSettings,
-    QdrantSettings,
-    parse_args,
-)
+from mcp_server_qdrant.settings import EmbeddingProviderSettings, QdrantSettings
 
 logger = logging.getLogger(__name__)
-
-# Parse command line arguments and set them as environment variables.
-# This is done for backwards compatibility with the previous versions
-# of the MCP server.
-env_vars = parse_args()
-for key, value in env_vars.items():
-    os.environ[key] = value
 
 
 @asynccontextmanager
@@ -29,6 +17,8 @@ async def server_lifespan(server: Server) -> AsyncIterator[dict]:  # noqa
     """
     Context manager to handle the lifespan of the server.
     This is used to configure the embedding provider and Qdrant connector.
+    All the configuration is now loaded from the environment variables.
+    Settings handle that for us.
     """
     try:
         # Embedding provider is created with a factory function so we can add
@@ -63,7 +53,7 @@ async def server_lifespan(server: Server) -> AsyncIterator[dict]:  # noqa
         pass
 
 
-mcp = FastMCP("Qdrant", lifespan=server_lifespan)
+mcp = FastMCP("mcp-server-qdrant", lifespan=server_lifespan)
 
 
 @mcp.tool(
@@ -116,7 +106,3 @@ async def find(query: str, ctx: Context) -> List[str]:
     for entry in entries:
         content.append(f"<entry>{entry}</entry>")
     return content
-
-
-if __name__ == "__main__":
-    mcp.run()
