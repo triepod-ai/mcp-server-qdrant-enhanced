@@ -3,7 +3,7 @@ from . import server
 
 def main():
     """Main entry point for the package."""
-    server.main()
+    server.mcp.run()
 
 
 # Optionally expose other important items at package level

@@ -53,9 +53,9 @@ class QdrantConnector:
                 },
             )
 
-    async def store_memory(self, information: str):
+    async def store(self, information: str):
         """
-        Store a memory in the Qdrant collection.
+        Store some information in the Qdrant collection.
         :param information: The information to store.
         """
         await self._ensure_collection_exists()
@@ -76,11 +76,11 @@ class QdrantConnector:
             ],
         )
 
-    async def find_memories(self, query: str) -> list[str]:
+    async def search(self, query: str) -> list[str]:
         """
-        Find memories in the Qdrant collection. If there are no memories found, an empty list is returned.
+        Find points in the Qdrant collection. If there are no entries found, an empty list is returned.
         :param query: The query to use for the search.
-        :return: A list of memories found.
+        :return: A list of entries found.
         """
         collection_exists = await self._client.collection_exists(self._collection_name)
         if not collection_exists:
