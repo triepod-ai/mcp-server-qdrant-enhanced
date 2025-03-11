@@ -31,19 +31,58 @@ It acts as a semantic memory layer on top of the Qdrant database.
      - `query` (string): Query to use for searching
    - Returns: Information stored in the Qdrant database as separate messages
 
-## Installation in Claude Desktop
+> [!NOTE]
+> The tool descriptions provided above are examples and may need to be customized for your specific use case. Consider adjusting the descriptions to better match your team's workflow and the specific types of code snippets you want to store and retrieve.
 
-### Using mcp (recommended)
+## Environment Variables
 
-When using [`mcp`](https://github.com/modelcontextprotocol/python-sdk) no specific installation is needed to directly run *mcp-server-qdrant*.
+The configuration of the server is done using environment variables:
+
+| Name                     | Description                                                         | Default Value                                                     |
+|--------------------------|---------------------------------------------------------------------|-------------------------------------------------------------------|
+| `QDRANT_URL`             | URL of the Qdrant server                                            | None                                                              |
+| `QDRANT_API_KEY`         | API key for the Qdrant server                                       | None                                                              |
+| `COLLECTION_NAME`        | Name of the collection to use                                       | *Required*                                                        |
+| `QDRANT_LOCAL_PATH`      | Path to the local Qdrant database (alternative to `QDRANT_URL`)     | None                                                              |
+| `EMBEDDING_PROVIDER`     | Embedding provider to use (currently only "fastembed" is supported) | `fastembed`                                                       |
+| `EMBEDDING_MODEL`        | Name of the embedding model to use                                  | `sentence-transformers/all-MiniLM-L6-v2`                          |
+| `TOOL_STORE_DESCRIPTION` | Custom description for the store tool                               | See default in [`settings.py`](src/mcp_server_qdrant/settings.py) |
+| `TOOL_FIND_DESCRIPTION`  | Custom description for the find tool                                | See default in [`settings.py`](src/mcp_server_qdrant/settings.py) |
+
+Note: You cannot provide both `QDRANT_URL` and `QDRANT_LOCAL_PATH` at the same time.
+
+> [!IMPORTANT]
+> Command-line arguments are not supported anymore! Please use environment variables for all configuration.
+
+## Installation
+
+### Using uvx
+
+When using [`uvx`](https://docs.astral.sh/uv/guides/tools/#running-tools) no specific installation is needed to directly run *mcp-server-qdrant*.
 
 ```shell
-mcp install src/mcp_server_qdrant/server.py \
-  -v QDRANT_URL="http://localhost:6333" \
-  -v QDRANT_API_KEY="your_api_key" \
-  -v COLLECTION_NAME="my_collection" \
-  -v EMBEDDING_MODEL="sentence-transformers/all-MiniLM-L6-v2"
+QDRANT_URL="http://localhost:6333" \
+COLLECTION_NAME="my-collection" \
+EMBEDDING_MODEL="sentence-transformers/all-MiniLM-L6-v2" \
+uvx mcp-server-qdrant
 ```
+
+#### Transport Protocols
+
+The server supports different transport protocols that can be specified using the `--transport` flag:
+
+```shell
+QDRANT_URL="http://localhost:6333" \
+COLLECTION_NAME="my-collection" \
+uvx mcp-server-qdrant --transport sse
+```
+
+Supported transport protocols:
+
+- `stdio` (default): Standard input/output transport, might only be used by local MCP clients
+- `sse`: Server-Sent Events transport, perfect for remote clients
+
+The default transport is `stdio` if not specified.
 
 ### Installing via Smithery
 
@@ -53,7 +92,7 @@ To install Qdrant MCP Server for Claude Desktop automatically via [Smithery](htt
 npx @smithery/cli install mcp-server-qdrant --client claude
 ```
 
-### Manual configuration
+### Manual configuration of Claude Desktop
 
 To use this server with the Claude Desktop app, add the following configuration to the "mcpServers" section of your
 `claude_desktop_config.json`:
@@ -64,9 +103,9 @@ To use this server with the Claude Desktop app, add the following configuration 
     "command": "uvx",
     "args": ["mcp-server-qdrant"],
     "env": {
-      "QDRANT_URL": "http://localhost:6333",
+      "QDRANT_URL": "https://xyz-example.eu-central.aws.cloud.qdrant.io:6333",
       "QDRANT_API_KEY": "your_api_key",
-      "COLLECTION_NAME": "your_collection_name",
+      "COLLECTION_NAME": "your-collection-name",
       "EMBEDDING_MODEL": "sentence-transformers/all-MiniLM-L6-v2"
     }
   }
@@ -82,7 +121,7 @@ For local Qdrant mode:
     "args": ["mcp-server-qdrant"],
     "env": {
       "QDRANT_LOCAL_PATH": "/path/to/qdrant/database",
-      "COLLECTION_NAME": "your_collection_name",
+      "COLLECTION_NAME": "your-collection-name",
       "EMBEDDING_MODEL": "sentence-transformers/all-MiniLM-L6-v2"
     }
   }
@@ -94,27 +133,57 @@ This MCP server will automatically create a collection with the specified name i
 By default, the server will use the `sentence-transformers/all-MiniLM-L6-v2` embedding model to encode memories.
 For the time being, only [FastEmbed](https://qdrant.github.io/fastembed/) models are supported.
 
-### Support for other tools
+## Support for other tools
 
 This MCP server can be used with any MCP-compatible client. For example, you can use it with
 [Cursor](https://docs.cursor.com/context/model-context-protocol), which provides built-in support for the Model Context
 Protocol.
 
-## Environment Variables
+### Using with Cursor/Windsurf
 
-The configuration of the server is done using environment variables:
+You can configure this MCP server to work as a code search tool for Cursor or Windsurf by customizing the tool
+descriptions:
 
-- `QDRANT_URL`: URL of the Qdrant server, e.g. `http://localhost:6333`
-- `QDRANT_API_KEY`: API key for the Qdrant server (optional, depends on Qdrant server configuration)
-- `COLLECTION_NAME`: Name of the collection to use (required)
-- `EMBEDDING_MODEL`: Name of the embedding model to use (default: `sentence-transformers/all-MiniLM-L6-v2`)
-- `EMBEDDING_PROVIDER`: Embedding provider to use (currently only "fastembed" is supported)
-- `QDRANT_LOCAL_PATH`: Path to the local Qdrant database (alternative to `QDRANT_URL`)
+```bash
+QDRANT_URL="http://localhost:6333" \
+COLLECTION_NAME="code-snippets" \
+TOOL_STORE_DESCRIPTION="Store reusable code snippets for later retrieval. The 'information' parameter should contain a natural language description of what the code does, while the actual code should be included in the 'metadata' parameter as a 'code' property. The value of 'metadata' is a Python dictionary with strings as keys. Use this whenever you generate some code snippet." \
+TOOL_FIND_DESCRIPTION="Search for relevant code snippets based on natural language descriptions. The 'query' parameter should describe what you're looking for, and the tool will return the most relevant code snippets. Use this when you need to find existing code snippets for reuse or reference." \
+uvx mcp-server-qdrant --transport sse # Enable SSE transport
+```
 
-Note: You cannot provide both `QDRANT_URL` and `QDRANT_LOCAL_PATH` at the same time.
+In Cursor/Windsurf, you can then configure the MCP server in your settings by pointing to this running server using
+SSE transport protocol. The description on how to add an MCP server to Cursor can be found in the [Cursor
+documentation](https://docs.cursor.com/context/model-context-protocol#adding-an-mcp-server-to-cursor). If you are
+running Cursor/Windsurf locally, you can use the following URL:
 
-> [!IMPORTANT]
-> Command-line arguments are not supported anymore! Please use environment variables for all configuration.
+```
+http://localhost:8000/sse
+```
+
+> [!TIP]
+> We suggest SSE transport as a preferred way to connect Cursor/Windsurf to the MCP server, as it can support remote
+> connections. That makes it easy to share the server with your team or use it in a cloud environment.
+
+This configuration transforms the Qdrant MCP server into a specialized code search tool that can:
+
+1. Store code snippets, documentation, and implementation details
+2. Retrieve relevant code examples based on semantic search
+3. Help developers find specific implementations or usage patterns
+
+You can populate the database by storing natural language descriptions of code snippets (in the `information` parameter)
+along with the actual code (in the `metadata.code` property), and then search for them using natural language queries
+that describe what you're looking for.
+
+> [!NOTE]
+> The tool descriptions provided above are examples and may need to be customized for your specific use case. Consider
+> adjusting the descriptions to better match your team's workflow and the specific types of code snippets you want to
+> store and retrieve.
+
+**If you have successfully installed the `mcp-server-qdrant`, but still can't get it to work with Cursor, please
+consider creating the [Cursor rules](https://docs.cursor.com/context/rules-for-ai) so the MCP tools are always used when
+the agent produces a new code snippet.** You can restrict the rules to only work for certain file types, to avoid using
+the MCP server for the documentation or other types of content.
 
 ## Contributing
 

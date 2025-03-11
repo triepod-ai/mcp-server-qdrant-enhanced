@@ -1,14 +1,18 @@
 import json
 import logging
 from contextlib import asynccontextmanager
-from typing import AsyncIterator, List, Optional
+from typing import AsyncIterator, List
 
 from mcp.server import Server
 from mcp.server.fastmcp import Context, FastMCP
 
 from mcp_server_qdrant.embeddings.factory import create_embedding_provider
 from mcp_server_qdrant.qdrant import Entry, Metadata, QdrantConnector
-from mcp_server_qdrant.settings import EmbeddingProviderSettings, QdrantSettings
+from mcp_server_qdrant.settings import (
+    EmbeddingProviderSettings,
+    QdrantSettings,
+    ToolSettings,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -54,20 +58,26 @@ async def server_lifespan(server: Server) -> AsyncIterator[dict]:  # noqa
         pass
 
 
+# FastMCP is an alternative interface for declaring the capabilities
+# of the server. Its API is based on FastAPI.
 mcp = FastMCP("mcp-server-qdrant", lifespan=server_lifespan)
 
+# Load the tool settings from the env variables, if they are set,
+# or use the default values otherwise.
+tool_settings = ToolSettings()
 
-@mcp.tool(
-    name="qdrant-store",
-    description=(
-        "Keep the memory for later use, when you are asked to remember something."
-    ),
-)
+
+@mcp.tool(name="qdrant-store", description=tool_settings.tool_store_description)
 async def store(
-    ctx: Context, information: str, metadata: Optional[Metadata] = None
+    ctx: Context,
+    information: str,
+    # The `metadata` parameter is defined as non-optional, but it can be None.
+    # If we set it to be optional, some of the MCP clients, like Cursor, cannot
+    # handle the optional parameter correctly.
+    metadata: Metadata = None,
 ) -> str:
     """
-    Store a memory in Qdrant.
+    Store some information in Qdrant.
     :param ctx: The context for the request.
     :param information: The information to store.
     :param metadata: JSON metadata to store with the information, optional.
@@ -82,15 +92,7 @@ async def store(
     return f"Remembered: {information}"
 
 
-@mcp.tool(
-    name="qdrant-find",
-    description=(
-        "Look up memories in Qdrant. Use this tool when you need to: \n"
-        " - Find memories by their content \n"
-        " - Access memories for further analysis \n"
-        " - Get some personal information about the user"
-    ),
-)
+@mcp.tool(name="qdrant-find", description=tool_settings.tool_find_description)
 async def find(ctx: Context, query: str) -> List[str]:
     """
     Find memories in Qdrant.
@@ -98,15 +100,15 @@ async def find(ctx: Context, query: str) -> List[str]:
     :param query: The query to use for the search.
     :return: A list of entries found.
     """
-    await ctx.debug(f"Finding points for query {query}")
+    await ctx.debug(f"Finding results for query {query}")
     qdrant_connector: QdrantConnector = ctx.request_context.lifespan_context[
         "qdrant_connector"
     ]
     entries = await qdrant_connector.search(query)
     if not entries:
-        return [f"No memories found for the query '{query}'"]
+        return [f"No information found for the query '{query}'"]
     content = [
-        f"Memories for the query '{query}'",
+        f"Results for the query '{query}'",
     ]
     for entry in entries:
         # Format the metadata as a JSON string and produce XML-like output
