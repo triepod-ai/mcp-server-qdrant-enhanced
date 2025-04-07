@@ -53,10 +53,16 @@ class QdrantSettings(BaseSettings):
 
     location: Optional[str] = Field(default=None, validation_alias="QDRANT_URL")
     api_key: Optional[str] = Field(default=None, validation_alias="QDRANT_API_KEY")
-    collection_name: str = Field(validation_alias="COLLECTION_NAME")
+    collection_name: Optional[str] = Field(
+        default=None, validation_alias="COLLECTION_NAME"
+    )
     local_path: Optional[str] = Field(
         default=None, validation_alias="QDRANT_LOCAL_PATH"
     )
+    search_limit: Optional[int] = Field(
+        default=None, validation_alias="QDRANT_SEARCH_LIMIT"
+    )
+    read_only: bool = Field(default=False, validation_alias="QDRANT_READ_ONLY")
 
     def get_qdrant_location(self) -> str:
         """

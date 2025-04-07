@@ -66,6 +66,8 @@ class QdrantConnector:
         await self._ensure_collection_exists(collection_name)
 
         # Embed the document
+        # ToDo: instead of embedding text explicitly, use `models.Document`,
+        # it should unlock usage of server-side inference.
         embeddings = await self._embedding_provider.embed_documents([entry.content])
 
         # Add to Qdrant
@@ -99,13 +101,17 @@ class QdrantConnector:
             return []
 
         # Embed the query
+        # ToDo: instead of embedding text explicitly, use `models.Document`,
+        # it should unlock usage of server-side inference.
+
         query_vector = await self._embedding_provider.embed_query(query)
         vector_name = self._embedding_provider.get_vector_name()
 
         # Search in Qdrant
-        search_results = await self._client.search(
+        search_results = await self._client.query_points(
             collection_name=collection_name,
-            query_vector=models.NamedVector(name=vector_name, vector=query_vector),
+            query=query_vector,
+            using=vector_name,
             limit=limit,
         )
 
@@ -114,7 +120,7 @@ class QdrantConnector:
                 content=result.payload["document"],
                 metadata=result.payload.get("metadata"),
             )
-            for result in search_results
+            for result in search_results.points
         ]
 
     async def _ensure_collection_exists(self, collection_name: str):

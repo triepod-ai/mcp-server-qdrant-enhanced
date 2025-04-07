@@ -25,15 +25,15 @@ It acts as a semantic memory layer on top of the Qdrant database.
    - Input:
      - `information` (string): Information to store
      - `metadata` (JSON): Optional metadata to store
-     - `collection_name` (string): Name of the collection to store the information in, optional. If not provided,
-                                   the default collection name will be used.
+     - `collection_name` (string): Name of the collection to store the information in. This field is required if there are no default collection name.
+                                   If there is a default collection name, this field is not enabled.
    - Returns: Confirmation message
 2. `qdrant-find`
    - Retrieve relevant information from the Qdrant database
    - Input:
      - `query` (string): Query to use for searching
-     - `collection_name` (string): Name of the collection to store the information in, optional. If not provided,
-                                   the default collection name will be used.
+     - `collection_name` (string): Name of the collection to store the information in. This field is required if there are no default collection name.
+                                   If there is a default collection name, this field is not enabled.
    - Returns: Information stored in the Qdrant database as separate messages
 
 ## Environment Variables
@@ -44,7 +44,7 @@ The configuration of the server is done using environment variables:
 |--------------------------|---------------------------------------------------------------------|-------------------------------------------------------------------|
 | `QDRANT_URL`             | URL of the Qdrant server                                            | None                                                              |
 | `QDRANT_API_KEY`         | API key for the Qdrant server                                       | None                                                              |
-| `COLLECTION_NAME`        | Name of the default collection to use.                              | *Required*                                                        |
+| `COLLECTION_NAME`        | Name of the default collection to use.                              | None                                                              |
 | `QDRANT_LOCAL_PATH`      | Path to the local Qdrant database (alternative to `QDRANT_URL`)     | None                                                              |
 | `EMBEDDING_PROVIDER`     | Embedding provider to use (currently only "fastembed" is supported) | `fastembed`                                                       |
 | `EMBEDDING_MODEL`        | Name of the embedding model to use                                  | `sentence-transformers/all-MiniLM-L6-v2`                          |
@@ -244,6 +244,15 @@ Claude Code should be already able to:
 
 1. Use the `qdrant-store` tool to store code snippets with descriptions.
 2. Use the `qdrant-find` tool to search for relevant code snippets using natural language.
+
+### Run MCP server in Development Mode
+
+The MCP server can be run in development mode using the `mcp dev` command. This will start the server and open the MCP
+inspector in your browser.
+
+```shell
+COLLECTION_NAME=mcp-dev mcp dev src/mcp_server_qdrant/server.py
+```
 
 ## Contributing
 
