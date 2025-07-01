@@ -32,18 +32,10 @@ EMBEDDING_MODEL_CONFIGS = {
         "fastembed_model": "BAAI/bge-base-en"
     },
     
-    # Technical solutions - standard
+    # Technical solutions - standard (384D MiniLM for efficiency)
     "all-minilm-l6-v2": {
         "dimensions": 384,
         "vector_name": "all-minilm-l6-v2",
-        "provider": EmbeddingProviderType.FASTEMBED,
-        "fastembed_model": "sentence-transformers/all-MiniLM-L6-v2"
-    },
-    
-    # Default/legacy compatibility
-    "fast-all-minilm-l6-v2": {
-        "dimensions": 384,
-        "vector_name": "fast-all-minilm-l6-v2",
         "provider": EmbeddingProviderType.FASTEMBED,
         "fastembed_model": "sentence-transformers/all-MiniLM-L6-v2"
     }
@@ -62,12 +54,14 @@ COLLECTION_MODEL_MAPPINGS = {
     "mcp-optimization-knowledge": "bge-base-en",  # 768D - comprehensive technical knowledge
     "project_achievements": "bge-base-en",  # 768D - career-focused accomplishments
     "project_documentation": "bge-base-en",  # 768D - cross-project documentation discovery
+    "cross_project_todos": "bge-base-en",  # 768D - semantic task similarity for deduplication
+    "contextual_knowledge": "bge-base-en",  # 768D - comprehensive contextual knowledge analysis
+    "triepod-documentation": "bge-base-en",  # 768D - project documentation with semantic search
+    "development_patterns": "bge-base-en",  # 768D - comprehensive development pattern analysis
     
     # Low-dimensional models (384D) - Technical/debug content prioritizing speed
     "working_solutions": "all-minilm-l6-v2",  # 384D - efficient for technical solutions
     "debugging_patterns": "all-minilm-l6-v2",  # 384D - efficient for debug patterns
-    "development_patterns": "all-minilm-l6-v2",  # 384D - technical development patterns
-    "contextual_knowledge": "all-minilm-l6-v2",  # 384D - contextual technical knowledge
     "development_solutions": "all-minilm-l6-v2",  # 384D - quick technical solutions
     
     # Legacy collections
@@ -146,7 +140,7 @@ class EnhancedEmbeddingProviderSettings(BaseSettings):
             # Fall back to default model
             return {
                 "dimensions": 384,
-                "vector_name": "fast-all-minilm-l6-v2", 
+                "vector_name": "all-minilm-l6-v2", 
                 "provider": EmbeddingProviderType.FASTEMBED,
                 "fastembed_model": self.model_name
             }
@@ -166,7 +160,7 @@ class EnhancedEmbeddingProviderSettings(BaseSettings):
     def get_vector_name_for_collection(self, collection_name: str) -> str:
         """Get the vector name for a collection."""
         config = self.get_model_config_for_collection(collection_name)
-        return config.get("vector_name", "fast-all-minilm-l6-v2")
+        return config.get("vector_name", "all-minilm-l6-v2")
         
     def get_dimensions_for_collection(self, collection_name: str) -> int:
         """Get the vector dimensions for a collection."""

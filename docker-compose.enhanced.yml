@@ -1,0 +1,33 @@
+version: '3.8'
+
+services:
+  mcp-server-enhanced:
+    build: 
+      context: .
+      dockerfile: Dockerfile.enhanced
+    container_name: mcp-server-qdrant-enhanced
+    stdin_open: true
+    tty: true
+    network_mode: host
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    environment:
+      - QDRANT_URL=http://localhost:6333
+      - COLLECTION_NAME=working_solutions
+      - QDRANT_AUTO_CREATE_COLLECTIONS=true
+      - QDRANT_ENABLE_QUANTIZATION=true
+      - QDRANT_HNSW_EF_CONSTRUCT=200
+      - QDRANT_HNSW_M=16
+      - EMBEDDING_PROVIDER=fastembed
+      - EMBEDDING_MODEL=sentence-transformers/all-MiniLM-L6-v2
+      - PYTHONUNBUFFERED=1
+      - NVIDIA_VISIBLE_DEVICES=all
+      - FASTEMBED_CUDA=false
+    volumes:
+      - ./logs:/app/logs:rw
+    restart: unless-stopped
