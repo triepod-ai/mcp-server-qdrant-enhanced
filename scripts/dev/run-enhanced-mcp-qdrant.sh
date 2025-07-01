@@ -29,4 +29,4 @@ else
 fi
 
 # Execute enhanced MCP server
-exec python -u -m mcp_server_qdrant.main --transport stdio
+exec python -u -m mcp_server_qdrant.enhanced_main --transport stdio
