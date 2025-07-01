@@ -163,3 +163,130 @@ cython_debug/
 
 # Project-specific settings
 .aider*
+
+**/.claude/settings.local.json
+
+# MCP and local configuration
+.mcp.json
+.env
+.env.*
+*.env
+.env.local
+.env.*.local
+
+# Build and log files
+build.log
+*.log
+logs/
+*.log.*
+
+# Docker overrides
+docker-compose.override.yml
+docker-compose.*.override.yml
+
+# Qdrant storage
+qdrant_storage/
+qdrant_data/
+storage/
+data/
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+*.temp
+
+# User-specific workspace files
+*.code-workspace
+
+# Shell script logs
+*.out
+*.err
+
+# Test outputs
+test-results/
+test-output/
+
+# Cache directories
+.cache/
+cache/
+
+# Local virtual environments
+.venv/
+venv/
+env/
+.virtualenv/
+
+# Python version files
+.python-version
+
+# Pre-commit
+.pre-commit-config.yaml
+
+# Lock files (keep uv.lock in repo)
+.lock
+!uv.lock
+
+# Personal/private directories
+private/
+personal/
+local/
+
+# Backup files
+*.bak
+*.backup
+*~
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDE specific
+.vscode/
+.idea/
+*.sublime-*
+
+# Coverage reports
+.coverage
+coverage/
+htmlcov/
+*.cover
+.coverage.*
+
+# Distribution
+dist/
+build/
+*.egg-info/
+
+# Pytest
+.pytest_cache/
+pytest.ini
+
+# MyPy
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# Jupyter
+.ipynb_checkpoints/
+*.ipynb
+
+# Secrets and credentials
+secrets/
+credentials/
+*.pem
+*.key
+*.cert
+*.crt
+
+# Installation artifacts
+install.log
+setup.log
+
+# Runtime files
+*.pid
+*.sock
+*.socket

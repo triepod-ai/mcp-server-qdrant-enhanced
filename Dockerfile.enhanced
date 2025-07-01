@@ -1,0 +1,39 @@
+FROM python:3.11-slim
+
+WORKDIR /app
+
+# Copy the source code
+COPY . /app
+
+# Install uv for package management
+RUN pip install --no-cache-dir uv
+
+# Install the package with GPU support ready (will fallback to CPU)
+RUN uv pip install --system -e .
+
+# Set environment variables with defaults that can be overridden at runtime
+ENV QDRANT_URL=""
+ENV QDRANT_API_KEY=""
+ENV COLLECTION_NAME="working_solutions"
+ENV EMBEDDING_MODEL="sentence-transformers/all-MiniLM-L6-v2"
+ENV QDRANT_AUTO_CREATE_COLLECTIONS="true"
+ENV QDRANT_ENABLE_QUANTIZATION="true"
+ENV QDRANT_HNSW_EF_CONSTRUCT="200"
+ENV QDRANT_HNSW_M="16"
+ENV EMBEDDING_PROVIDER="fastembed"
+
+# Pre-download all embedding models used in enhanced version to avoid runtime downloads
+# This significantly reduces container startup time and ensures models are available
+RUN python -c "\
+import sys; \
+sys.path.insert(0, 'src'); \
+from fastembed import TextEmbedding; \
+models_to_download = ['BAAI/bge-large-en-v1.5', 'BAAI/bge-base-en-v1.5', 'BAAI/bge-base-en', 'sentence-transformers/all-MiniLM-L6-v2']; \
+print('Pre-downloading embedding models for enhanced multi-vector support...'); \
+[print(f'Downloading {model}...') or TextEmbedding(model) and print(f'✓ {model} downloaded successfully') for model in models_to_download]; \
+print('✓ All embedding models pre-downloaded')"
+
+# Run the enhanced server with stdio transport (for MCP)
+# Use unbuffered output for proper stdio communication
+ENV PYTHONUNBUFFERED=1
+CMD ["python", "-u", "-m", "mcp_server_qdrant.main", "--transport", "stdio"]

@@ -40,13 +40,27 @@ class QdrantConnector:
         embedding_provider: EmbeddingProvider,
         qdrant_local_path: Optional[str] = None,
     ):
+        import sys
+        #         print(f"[DEBUG] qdrant.py: QdrantConnector.__init__ called", file=sys.stderr)
+        #         print(f"[DEBUG] qdrant.py:   qdrant_url={qdrant_url}", file=sys.stderr)
+        #         print(f"[DEBUG] qdrant.py:   qdrant_api_key={'***' if qdrant_api_key else None}", file=sys.stderr)
+        #         print(f"[DEBUG] qdrant.py:   collection_name={collection_name}", file=sys.stderr)
+        #         print(f"[DEBUG] qdrant.py:   qdrant_local_path={qdrant_local_path}", file=sys.stderr)
+        
         self._qdrant_url = qdrant_url.rstrip("/") if qdrant_url else None
         self._qdrant_api_key = qdrant_api_key
         self._default_collection_name = collection_name
         self._embedding_provider = embedding_provider
-        self._client = AsyncQdrantClient(
-            location=qdrant_url, api_key=qdrant_api_key, path=qdrant_local_path
-        )
+        
+        try:
+            #             print(f"[DEBUG] qdrant.py: Creating AsyncQdrantClient", file=sys.stderr)
+            self._client = AsyncQdrantClient(
+                location=qdrant_url, api_key=qdrant_api_key, path=qdrant_local_path
+            )
+            #             print(f"[DEBUG] qdrant.py: AsyncQdrantClient created successfully", file=sys.stderr)
+        except Exception as e:
+            #             print(f"[ERROR] qdrant.py: Failed to create AsyncQdrantClient: {type(e).__name__}: {e}", file=sys.stderr)
+            raise
 
     async def get_collection_names(self) -> list[str]:
         """

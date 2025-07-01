@@ -14,8 +14,20 @@ class FastEmbedProvider(EmbeddingProvider):
     """
 
     def __init__(self, model_name: str):
+        import sys
+        #         print(f"[DEBUG] fastembed.py: FastEmbedProvider.__init__ called with model_name={model_name}", file=sys.stderr)
+        
         self.model_name = model_name
-        self.embedding_model = TextEmbedding(model_name)
+        
+        try:
+            #             print(f"[DEBUG] fastembed.py: Creating TextEmbedding with model_name={model_name}", file=sys.stderr)
+            self.embedding_model = TextEmbedding(model_name)
+            #             print(f"[DEBUG] fastembed.py: TextEmbedding created successfully", file=sys.stderr)
+        except Exception as e:
+            #             print(f"[ERROR] fastembed.py: Failed to create TextEmbedding: {type(e).__name__}: {e}", file=sys.stderr)
+            import traceback
+            traceback.print_exc(file=sys.stderr)
+            raise
 
     async def embed_documents(self, documents: List[str]) -> List[List[float]]:
         """Embed a list of documents into vectors."""

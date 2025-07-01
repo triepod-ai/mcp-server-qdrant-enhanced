@@ -1,0 +1,11 @@
+{
+  "collection_name": "project_achievements",
+  "status": "green",
+  "points": 35,
+  "indexed_vectors": 0,
+  "vector_name": "fast-all-minilm-l6-v2",
+  "dimensions": 384,
+  "fastembed_model": "sentence-transformers/all-MiniLM-L6-v2",
+  "quantization": "Disabled",
+  "backup_date": "2025-07-01T13:56:07"
+}

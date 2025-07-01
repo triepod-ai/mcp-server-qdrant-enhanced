@@ -29,6 +29,7 @@ dev-dependencies = [
 
 [project.scripts]
 mcp-server-qdrant = "mcp_server_qdrant.main:main"
+mcp-server-qdrant-enhanced = "mcp_server_qdrant.enhanced_main:main"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
