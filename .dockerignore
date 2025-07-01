@@ -1,0 +1,82 @@
+# Virtual environments
+.venv/
+venv/
+env/
+.env/
+**/venv/
+**/env/
+migration_env/
+
+# Python cache and build artifacts
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Git and version control
+.git/
+.gitignore
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+*.code-workspace
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs and temporary files
+logs/
+*.log
+tmp/
+temp/
+
+# Test output and coverage
+tests/test_output.txt
+.coverage
+coverage/
+.pytest_cache/
+.tox/
+.ruff_cache/
+
+# Documentation and development files
+docs/
+README.md
+LICENSE
+CLAUDE.local.md
+*.md
+
+# Migration backups
+migration-backups/
+
+# Claude/MCP configuration
+.claude/
+claude-mcp-config*.json
+
+# Development scripts
+scripts/
+run-*.sh
+deploy-*.sh
+
+# Templates
+templates/
