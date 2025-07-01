@@ -1,0 +1,15 @@
+{
+  "mcpServers": {
+    "qdrant-enhanced-container": {
+      "command": "/home/bryan/mcp-servers/mcp-server-qdrant/run-enhanced-container.sh",
+      "args": [],
+      "env": {
+        "QDRANT_URL": "http://host.docker.internal:6333",
+        "COLLECTION_NAME": "working_solutions",
+        "QDRANT_AUTO_CREATE_COLLECTIONS": "true",
+        "QDRANT_ENABLE_QUANTIZATION": "true",
+        "EMBEDDING_PROVIDER": "FASTEMBED"
+      }
+    }
+  }
+}

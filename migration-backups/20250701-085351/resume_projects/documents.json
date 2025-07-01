@@ -1,0 +1,82 @@
+{
+  "collection": "resume_projects",
+  "total_documents": 6,
+  "backup_date": "2025-07-01T13:54:27",
+  "documents": [
+    {
+      "content": "xAI Resume - Full Framework Applied: 87% token optimization + memory integration + verification framework. Ultra-compressed achievements (300% → 92% → 99.8% metrics), strategic positioning (AI model training specialist), factual accuracy verified (timeline appropriate 2024+, user metrics only). Complete methodology: progression narrative, business translation, ATS compliance, strategic storytelling. Ready for $55-65/hour application.",
+      "score": 0.0952,
+      "metadata": {
+        "type": "ultra_optimized_resume",
+        "framework": "complete_87%_methodology",
+        "verification": "timeline_factual_accuracy",
+        "positioning": "ai_model_training_specialist",
+        "company": "xAI",
+        "optimization": "87%_token_reduction",
+        "memory_integration": "complete",
+        "date": "2025-06-29"
+      }
+    },
+    {
+      "content": "BRYAN'S TECHNICAL SKILLS SUMMARY FOR RESUME\n\n## Executive Summary\nSenior Software Engineer with proven expertise in AI/ML platforms, full-stack development, and infrastructure automation. Led development of revolutionary AI integration platforms achieving 92% performance optimization. Specializes in Model Context Protocol (MCP) implementation, real-time systems, and secure multi-tenant architectures.\n\n## Core Technical Skills\n\n### Programming Languages & Frameworks ⭐⭐⭐⭐⭐\n- **TypeScript/JavaScript**: React 18, Next.js 15, Node.js, Express, modern ES modules\n- **Python**: FastAPI, Flask, ChromaDB, data processing, vector databases, AI/ML pipelines  \n- **Bash/Shell**: Production automation scripts (1,400+ lines), system orchestration\n- **Web Technologies**: HTML5, CSS3, Tailwind CSS, responsive design, progressive enhancement\n\n### AI/ML & Performance Engineering ⭐⭐⭐⭐⭐\n- **Performance Optimization**: 92% token reduction, 100% performance improvements\n- **AI Integration**: Claude API, conversation analysis, intelligent routing\n- **Vector Search**: Semantic search, similarity algorithms, retrieval systems\n- **Caching Strategies**: Redis implementation, TTL optimization, instant hits\n\n### Database Technologies ⭐⭐⭐⭐⭐\n- **Vector Databases**: ChromaDB, Qdrant, semantic search, embedding models\n- **Relational**: PostgreSQL, SQLite, Prisma ORM, complex queries, optimization\n- **Graph Databases**: Neo4j, relationship mapping, graph algorithms\n- **Caching**: Redis, session management, performance optimization\n- **Scale**: 153MB file processing, 42K+ document chunks, real-time operations",
+      "score": 0.0862,
+      "metadata": {
+        "type": "technical_skills_summary",
+        "category": "resume",
+        "date": "2025-06-27",
+        "focus": "senior_software_engineer",
+        "specializations": [
+          "ai_ml",
+          "full_stack",
+          "performance_engineering",
+          "mcp_protocol"
+        ]
+      }
+    },
+    {
+      "content": "RESUME STRATEGIC STORYTELLING COMMAND - COMPLETE WITH MEMORY ARCHITECTURE\n\n## ENHANCED COMMAND: Full Memory System Integration\n\nSuccessfully updated the resume-strategic-storytelling command to include our complete memory architecture and collection distribution strategy.\n\n### MEMORY SYSTEM DOCUMENTATION INCLUDED:\n\n**3 Integrated Memory Systems**:\n1. **Qdrant Vector Database**: Semantic search, always available, primary for resume content\n2. **Knowledge Graph (Neo4j)**: Structured relationships, complex queries\n3. **Chroma Vector Database**: Sequential reasoning, document collections\n\n**Collection Distribution Strategy**:\n- **project_achievements**: Comprehensive MCP development summary, major milestones\n- **resume_projects**: Resume-focused technical details, portfolio items  \n- **mcp-optimization-knowledge**: Performance metrics, technical specifications\n\n**Memory Functions Integrated**:\n- `RETRIEVE_SIMILAR_NARRATIVES()`: Searches existing content to avoid duplication\n- `GET_PERFORMANCE_PATTERNS()`: Retrieves relevant performance metrics\n- `STORE_NARRATIVE()`: Multi-system parallel storage with error handling\n- Parallel save pattern with error logging and fallback strategies\n\n**Production-Ready Memory Patterns**:\n- Storage examples from our successful implementations\n- Retrieval queries that have been tested and proven effective\n- Multi-system coordination for complex relationship queries\n- Collection-specific optimization strategies\n\n### COMMAND ENHANCEMENTS:\n\n**Memory-Integrated Execution Flow**:\n1. Retrieve existing narratives for context and consistency\n2. Analyze performance patterns from optimization knowledge\n3. Generate narrative leveraging existing successful patterns\n4. Store across all three memory systems with metadata\n5. Provide related content suggestions from memory\n\n**Error-Resistant Storage**:\n- Parallel saves with individual error logging\n- Graceful failure handling maintaining core functionality\n- Multi-system backup ensuring no data loss\n\n**Context-Aware Generation**:\n- Leverages existing successful narratives\n- Incorporates proven performance metrics\n- Maintains consistency with established positioning\n\n### STRATEGIC VALUE:\n\nThis enhanced command now serves as a **complete methodology template** that includes:\n- Our proven strategic storytelling framework (87% token optimized)\n- Full memory system architecture documentation\n- Production-ready storage and retrieval patterns\n- Error-resistant multi-system coordination\n- Context-aware content generation\n\n**Revolutionary Achievement**: Created self-contained resume enhancement command that includes complete memory architecture, established collection strategies, and proven storage/retrieval patterns, ensuring consistent strategic positioning with full methodology preservation.",
+      "score": 0.0842,
+      "metadata": {
+        "date": "2025-06-27",
+        "type": "enhanced_command_template",
+        "memory_integration": "complete",
+        "systems": "qdrant_neo4j_chroma",
+        "collection_strategy": "established",
+        "optimization": "87% + memory_architecture",
+        "status": "production_ready"
+      }
+    },
+    {
+      "content": "Bryan's Key Technical Projects for Resume:\n\n## FLAGSHIP PROJECT: claude.triepod.ai (30KB)\n**Claude AI Integration Platform** - Revolutionary monorepo integration complete\n- **Architecture**: Monorepo with unified development scripts and documentation\n- **Performance**: 95% token optimization maintained across unified structure  \n- **Integration**: Complete conversations.json analysis (153MB, 1,435 conversations, 42,157 chunks)\n- **Tech Stack**: Python, ChromaDB, Flask, Redis caching, Vector search, Stream-based JSON processing\n- **Features**: Web interface, CLI, multi-collection unified search, export functionality\n- **Database**: Chroma vector database with 41,832 chunks imported\n- **Performance**: 100% improvement with Redis caching (30-minute TTL)\n- **Security**: Non-root containers, comprehensive security review\n- **Deployment**: Production Chroma instance, automated processing with cron/systemd\n\n## triepod-unified (59KB) - Main Unified Platform\n**Real-Time Business Directory Platform** - PHASE 2 BACKEND INTEGRATION COMPLETE\n- **Database**: Railway PostgreSQL with comprehensive business directory schema\n- **Real-time**: Server-Sent Events connecting admin approvals to instant directory updates\n- **Authentication**: JWT authentication system with secure admin login\n- **Architecture**: Next.js website with React compliance, complete API endpoints\n- **Tech Stack**: Next.js, React, PostgreSQL, Prisma ORM, JWT, Server-Sent Events\n- **Features**: Business management, real-time synchronization, admin console, content manager\n- **Deployment**: GitHub Actions + Vercel, 98 pages building successfully\n- **Performance**: End-to-end workflow with live database operations\n- **Innovation**: Real-time admin-to-directory synchronization without page refreshes\n\n## setup-mcp-server.sh.APP (49KB) - MCP Automation System  \n**Model Context Protocol Server Management** - 92% Token Optimization Achievement\n- **Performance**: Revolutionary 92% token reduction, 3004ms response time with <1ms variance\n- **Architecture**: 10-profile optimization system with graduated efficiency\n- **Protocol**: Complete MCP 2024-11-05 specification implementation\n- **Tech Stack**: Bash scripting (1,400+ lines), Python, Node.js, Docker, JSON-RPC\n- **Features**: Multi-tier system design, configuration-driven architecture\n- **Integration**: Neo4j, Vector databases (Chroma, Qdrant), Redis, GitHub API\n- **Management**: Multi-service orchestration (10+ MCP servers), environment management\n- **Security**: Token handling, credential passthrough, comprehensive validation\n\n## dev-logic (12KB) - Advanced Memory Orchestration\n**MCP Orchestrator for Multi-System Memory Coordination** - 16 MCP Tools Available\n- **Security**: Secure brain pod management with user isolation via Docker containers\n- **Architecture**: TypeScript-based MCP server with multi-database integration\n- **Database**: Redis, Chroma, Qdrant, Neo4j connection management\n- **Tools**: 16 comprehensive MCP tools (memory intelligence, pod management, secure routing)\n- **Features**: Agent coordination hub, performance tracking, context management\n- **Security**: Complete data isolation, subscription-based resource controls\n- **Performance**: <500ms function call latency, <2s cross-system storage\n- **Testing**: 66.7% critical security tests passed, comprehensive validation",
+      "score": 0.0722,
+      "metadata": {
+        "type": "resume_projects",
+        "category": "technical_portfolio",
+        "date": "2025-06-27",
+        "total_projects": 10,
+        "flagship": "claude.triepod.ai"
+      }
+    },
+    {
+      "content": "Advanced LinkedIn Post Generation Framework: Strategic prompt system for creating high-engagement LinkedIn content targeting AI researchers and technical professionals. Includes 5 post types (Technical Insight, Project Showcase, Career Reflection, Industry Commentary, Behind-the-Scenes), structured content template (Hook → Context → Core Value → Implications → CTA), engagement optimization strategies, and specific content angles for MCP protocol expertise and self-taught technical growth. Designed for positioning as AI/ML engineer targeting companies like Anthropic, OpenAI, Google DeepMind.",
+      "score": 0.0508,
+      "metadata": {
+        "type": "linkedin_strategy",
+        "category": "post_generation_framework",
+        "target_audience": "ai_researchers_hiring_managers",
+        "positioning": "ai_ml_engineer_mcp_specialist",
+        "content_types": 5,
+        "date": "2025-06-27",
+        "status": "ready_to_use"
+      }
+    },
+    {
+      "content": "TEST: Collection creation after identifying correct MCP server wrapper script location.",
+      "score": 0.0333,
+      "metadata": {
+        "test": "768D_migration_wrapper_script",
+        "date": "2025-07-01"
+      }
+    }
+  ]
+}
