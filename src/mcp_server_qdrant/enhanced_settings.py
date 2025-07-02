@@ -58,6 +58,7 @@ COLLECTION_MODEL_MAPPINGS = {
     "contextual_knowledge": "bge-base-en",  # 768D - comprehensive contextual knowledge analysis
     "triepod-documentation": "bge-base-en",  # 768D - project documentation with semantic search
     "development_patterns": "bge-base-en",  # 768D - comprehensive development pattern analysis
+    "claude_code_documentation": "bge-base-en",  # 768D - comprehensive Claude Code documentation analysis
     
     # Low-dimensional models (384D) - Technical/debug content prioritizing speed
     "working_solutions": "all-minilm-l6-v2",  # 384D - efficient for technical solutions

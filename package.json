@@ -1,0 +1,94 @@
+{
+  "name": "@triepod-ai/mcp-server-qdrant-enhanced",
+  "version": "0.7.1",
+  "description": "Enhanced MCP server for Qdrant with GPU acceleration, multi-vector support, and production infrastructure",
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "qdrant",
+    "vector-database",
+    "embedding",
+    "ai",
+    "gpu-acceleration",
+    "fastembed",
+    "semantic-search"
+  ],
+  "author": "triepod-ai",
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/triepod-ai/mcp-server-qdrant-enhanced.git"
+  },
+  "homepage": "https://github.com/triepod-ai/mcp-server-qdrant-enhanced#readme",
+  "bugs": {
+    "url": "https://github.com/triepod-ai/mcp-server-qdrant-enhanced/issues"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "python": ">=3.10"
+  },
+  "main": "src/mcp_server_qdrant/enhanced_main.py",
+  "bin": {
+    "mcp-server-qdrant-enhanced": "bin/mcp-server-qdrant-enhanced",
+    "qdrant-mcp-enhanced": "bin/qdrant-mcp-enhanced"
+  },
+  "files": [
+    "src/",
+    "bin/",
+    "README.md",
+    "LICENSE",
+    "pyproject.toml",
+    "docker-compose.enhanced.yml",
+    "Dockerfile.enhanced",
+    "deploy.sh",
+    "scripts/"
+  ],
+  "scripts": {
+    "start": "python -m mcp_server_qdrant.enhanced_main --transport stdio",
+    "start:sse": "python -m mcp_server_qdrant.enhanced_main --transport sse",
+    "dev": "python -m mcp_server_qdrant.enhanced_main --transport stdio",
+    "test": "pytest tests/",
+    "lint": "ruff check src/",
+    "format": "ruff format src/",
+    "typecheck": "mypy src/",
+    "docker:build": "docker build -f Dockerfile.enhanced -t triepod-ai/mcp-server-qdrant-enhanced .",
+    "docker:run": "docker run -it --rm triepod-ai/mcp-server-qdrant-enhanced",
+    "docker:deploy": "./deploy.sh",
+    "docker:compose:up": "docker-compose -f docker-compose.enhanced.yml up -d",
+    "docker:compose:down": "docker-compose -f docker-compose.enhanced.yml down",
+    "install:deps": "uv pip install -r requirements.txt",
+    "install:dev": "uv pip install -r requirements-dev.txt",
+    "prepack": "npm run lint && npm run typecheck",
+    "prepublishOnly": "npm run prepack"
+  },
+  "dependencies": {
+    "python": ">=3.10"
+  },
+  "devDependencies": {},
+  "peerDependencies": {
+    "python": ">=3.10"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
+  "enhanced-features": {
+    "gpu-acceleration": true,
+    "multi-vector-support": "384D, 768D, 1024D",
+    "embedding-models": [
+      "BAAI/bge-large-en-v1.5",
+      "BAAI/bge-base-en-v1.5", 
+      "BAAI/bge-base-en",
+      "sentence-transformers/all-MiniLM-L6-v2"
+    ],
+    "production-ready": true,
+    "container-size": "4.49GB",
+    "collections-supported": 48,
+    "quantization-enabled": true
+  },
+  "installation-methods": {
+    "npm": "npm install -g @triepod-ai/mcp-server-qdrant-enhanced",
+    "docker": "docker pull ghcr.io/triepod-ai/mcp-server-qdrant-enhanced",
+    "setup-script": "curl -sSL https://raw.githubusercontent.com/triepod-ai/mcp-server-qdrant-enhanced/main/setup-qdrant-enhanced.sh | bash"
+  }
+}
