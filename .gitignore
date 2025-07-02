@@ -290,3 +290,95 @@ setup.log
 *.pid
 *.sock
 *.socket
+
+# Enhanced MCP Server specific ignores
+
+# Node.js/NPM build artifacts
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+.npm
+.eslintcache
+.node_repl_history
+*.tgz
+.yarn-integrity
+package-lock.json
+yarn.lock
+
+# Docker development files
+docker-compose.dev.yml
+docker-compose.*.yml
+!docker-compose.enhanced.yml
+
+# FastEmbed model cache and downloads
+.fastembed_cache/
+models/
+*.bin
+*.onnx
+*.safetensors
+*.model
+
+# Generated configuration files
+claude_desktop_config.json
+vscode_mcp_settings.json
+*_config_generated.json
+*_generated.json
+
+# Build and publish artifacts
+*.tar.gz
+*.zip
+*.dmg
+*.pkg
+*.deb
+*.rpm
+
+# ML/AI model files
+*.pt
+*.pth
+*.pkl
+*.pickle
+*.h5
+*.hdf5
+
+# Large binary files
+*.iso
+*.img
+*.qcow2
+*.vmdk
+
+# Generated documentation
+docs/generated/
+api-docs/
+
+# Development database files
+*.db
+*.sqlite
+*.sqlite3
+
+# Container logs and data
+container-logs/
+docker-data/
+
+# Setup script generated files
+setup-*.log
+installation-*.log
+
+# GitHub Actions artifacts
+.github/workflows/generated_*
+
+# Package manager caches
+.pnpm-store/
+.yarn/cache/
+.npm/_cacache/
+
+# Development tools output
+.ruff_cache/
+.mypy_cache/
+.pytest_cache/
+
+# Local development overrides
+local-config/
+dev-config/
+override/
