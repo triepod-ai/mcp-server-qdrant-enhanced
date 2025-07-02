@@ -189,12 +189,13 @@ This server automatically selects optimal embedding models based on collection n
 - **`project_achievements`**: Career accomplishments using BAAI/bge-base-en (768D)
 
 ### 🔬 Legal & Workplace (1024D BGE-Large Models)
-- **`lodestar_legal_analysis`**: Complex legal content using BAAI/bge-large-en-v1.5 (1024D)
-- **`lodestar_workplace_documentation`**: Workplace docs using BAAI/bge-base-en-v1.5 (768D)
+- **`legal_analysis`**: Complex legal content using BAAI/bge-large-en-v1.5 (1024D)
+- **`workplace_documentation`**: Business and workplace docs using BAAI/bge-base-en-v1.5 (768D)
 
 ### ⚡ Technical Collections (384D MiniLM Models)
 - **`working_solutions`**: Quick technical solutions using sentence-transformers/all-MiniLM-L6-v2 (384D)
 - **`debugging_patterns`**: Debug patterns using sentence-transformers/all-MiniLM-L6-v2 (384D)
+- **`troubleshooting`**: General troubleshooting and technical issues using sentence-transformers/all-MiniLM-L6-v2 (384D)
 - **Default collections**: Use 384D MiniLM for speed and efficiency
 
 ### 📊 Search Quality Improvements

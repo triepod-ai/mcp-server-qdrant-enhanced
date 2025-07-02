@@ -44,10 +44,12 @@ EMBEDDING_MODEL_CONFIGS = {
 # Collection-specific embedding model mappings - CORRECTED with proper high-dimension models
 COLLECTION_MODEL_MAPPINGS = {
     # High-dimensional models (1024D) - Complex analysis requiring maximum precision
-    "lodestar_legal_analysis": "bge-large-en-v1.5",  # 1024D - best for complex legal analysis
+    "legal_analysis": "bge-large-en-v1.5",  # 1024D - complex legal document analysis
+    "lodestar_legal_analysis": "bge-large-en-v1.5",  # 1024D - backward compatibility
     
     # Medium-dimensional models (768D) - Knowledge-intensive content
-    "lodestar_workplace_documentation": "bge-base-en-v1.5",  # 768D - good for workplace docs
+    "workplace_documentation": "bge-base-en-v1.5",  # 768D - business and workplace documents
+    "lodestar_workplace_documentation": "bge-base-en-v1.5",  # 768D - backward compatibility
     "lessons_learned": "bge-base-en",  # 768D - comprehensive analysis
     "resume_projects": "bge-base-en",  # 768D - career content benefits from precision
     "job_search": "bge-base-en",  # 768D - strategic career content
@@ -64,9 +66,26 @@ COLLECTION_MODEL_MAPPINGS = {
     "working_solutions": "all-minilm-l6-v2",  # 384D - efficient for technical solutions
     "debugging_patterns": "all-minilm-l6-v2",  # 384D - efficient for debug patterns
     "development_solutions": "all-minilm-l6-v2",  # 384D - quick technical solutions
+    "troubleshooting": "all-minilm-l6-v2",  # 384D - general troubleshooting and technical issues
     
-    # Legacy collections
+    # Legacy collections (backward compatibility)
     "lodestar_troubles": "all-minilm-l6-v2"  # 384D - backward compatibility
+}
+
+# Collection name aliases for backward compatibility and user-friendly naming
+COLLECTION_ALIASES = {
+    # Legacy lodestar names -> generic names
+    "lodestar_legal_analysis": "legal_analysis",
+    "lodestar_workplace_documentation": "workplace_documentation",
+    "lodestar_troubles": "troubleshooting",
+    
+    # Common alternative names -> standard names
+    "legal_docs": "legal_analysis",
+    "legal_documents": "legal_analysis",
+    "workplace_docs": "workplace_documentation",
+    "business_docs": "workplace_documentation",
+    "tech_troubleshooting": "troubleshooting",
+    "technical_issues": "troubleshooting",
 }
 
 
@@ -119,6 +138,9 @@ class EnhancedEmbeddingProviderSettings(BaseSettings):
         """
         import json
         
+        # Resolve collection name through aliases for backward compatibility
+        resolved_collection_name = COLLECTION_ALIASES.get(collection_name, collection_name)
+        
         # Parse collection mappings from settings
         collection_mappings = {}
         if self.collection_model_mappings and self.collection_model_mappings != "{}":
@@ -135,8 +157,8 @@ class EnhancedEmbeddingProviderSettings(BaseSettings):
         # Merge with default configs
         all_configs = {**EMBEDDING_MODEL_CONFIGS, **custom_configs}
         
-        # Find model for collection
-        model_name = all_mappings.get(collection_name)
+        # Find model for collection (try both original and resolved names)
+        model_name = all_mappings.get(resolved_collection_name) or all_mappings.get(collection_name)
         if not model_name:
             # Fall back to default model
             return {
