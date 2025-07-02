@@ -1,0 +1,83 @@
+#!/usr/bin/env bash
+
+# Enhanced Qdrant MCP Server - Development Entry Point
+# Quick access to development tools while preserving existing workflow
+
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+# If no arguments provided, show help
+if [[ $# -eq 0 ]]; then
+    echo "Enhanced Qdrant MCP Server - Development Tools"
+    echo
+    echo "Quick Commands:"
+    echo "  ./dev setup     - Interactive setup (NPM or Docker)"
+    echo "  ./dev start     - Start server (preserves existing workflow)"
+    echo "  ./dev dev       - Development mode with live reloading"
+    echo "  ./dev test      - Run tests and validation"
+    echo "  ./dev make      - Show all available make commands"
+    echo
+    echo "For full help: ./dev help"
+    exit 0
+fi
+
+case "${1}" in
+    make)
+        make -C "$SCRIPT_DIR" help
+        ;;
+    setup)
+        "$SCRIPT_DIR/setup-qdrant-enhanced.sh"
+        ;;
+    start|stop|restart|build|rebuild|logs|test|lint|clean|status|shell|dev-mode|quick-test)
+        "$SCRIPT_DIR/scripts/dev/dev.sh" "$@"
+        ;;
+    dev)
+        # Special shortcut for development mode
+        "$SCRIPT_DIR/scripts/dev/dev.sh" dev-mode
+        ;;
+    help|--help|-h)
+        echo "Enhanced Qdrant MCP Server - Development Tools"
+        echo
+        echo "Available commands:"
+        echo
+        echo "Setup & Installation:"
+        echo "  setup           Interactive setup (NPM or Docker options)"
+        echo
+        echo "Server Management (preserves existing workflow):"
+        echo "  start           Start the enhanced MCP server"
+        echo "  stop            Stop the enhanced MCP server"
+        echo "  restart         Restart the enhanced MCP server"
+        echo "  logs            Show container logs"
+        echo "  status          Show container status"
+        echo
+        echo "Development:"
+        echo "  dev             Start in development mode with live reloading"
+        echo "  shell           Open shell in running container"
+        echo "  build           Build Docker image"
+        echo "  rebuild         Force rebuild Docker image"
+        echo "  test            Run tests and validation"
+        echo "  lint            Run linting and formatting"
+        echo "  quick-test      Quick validation of MCP functionality"
+        echo
+        echo "Advanced:"
+        echo "  clean           Clean up containers and images"
+        echo "  make            Show all available make commands"
+        echo
+        echo "Examples:"
+        echo "  ./dev setup                 # First time setup"
+        echo "  ./dev start && ./dev logs   # Start and follow logs"
+        echo "  ./dev dev                   # Development with live reload"
+        echo "  ./dev test lint             # Run tests and linting"
+        echo
+        echo "Workflow Preservation:"
+        echo "  - Existing deploy.sh script is preserved and used"
+        echo "  - docker-compose.enhanced.yml workflow is maintained"
+        echo "  - All new features are additive, not replacing"
+        echo
+        ;;
+    *)
+        # Pass through to development script
+        "$SCRIPT_DIR/scripts/dev/dev.sh" "$@"
+        ;;
+esac

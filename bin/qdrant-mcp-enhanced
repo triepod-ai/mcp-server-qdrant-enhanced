@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+
+# Enhanced MCP Server for Qdrant - Shorter executable name
+# Part of @triepod-ai/mcp-server-qdrant-enhanced package
+
+# This is a convenience wrapper that calls the main executable
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+exec "${SCRIPT_DIR}/mcp-server-qdrant-enhanced" "$@"

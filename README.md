@@ -26,6 +26,97 @@ An enhanced Model Context Protocol server for keeping and retrieving memories in
 - **🚀 768D Career Collections**: Migrated career collections using BGE-Base models for superior semantic understanding
 - **🔒 Safe Migration**: Zero data loss migration with comprehensive backup strategies
 
+## 🚀 Quick Start
+
+Get up and running with the Enhanced Qdrant MCP Server in under 2 minutes! Choose your preferred installation method:
+
+### 🎯 One-Command Setup (Recommended)
+
+The easiest way to get started - interactive setup that guides you through the entire process:
+
+```bash
+curl -sSL https://raw.githubusercontent.com/triepod-ai/mcp-server-qdrant-enhanced/main/setup-qdrant-enhanced.sh | bash
+```
+
+This script will:
+- ✅ Detect your platform and requirements  
+- ✅ Let you choose between NPM or Docker installation
+- ✅ Configure Qdrant connection settings
+- ✅ Generate MCP client configurations (Claude Desktop, VS Code)
+- ✅ Test your setup and validate connectivity
+
+### 📦 Option 1: NPM Package (Development)
+
+Perfect for developers who want direct command access and easy integration:
+
+```bash
+# Install globally
+npm install -g @triepod-ai/mcp-server-qdrant-enhanced
+
+# Verify installation
+mcp-server-qdrant-enhanced --help
+
+# Quick test (requires running Qdrant instance)
+QDRANT_URL="http://localhost:6333" COLLECTION_NAME="test" mcp-server-qdrant-enhanced --transport stdio
+```
+
+**Requirements:** Node.js 18+, Python 3.10+, running Qdrant instance
+
+### 🐳 Option 2: Docker Container (Production)
+
+Complete isolation with all dependencies and models pre-installed:
+
+```bash
+# Pull the pre-built image (4.49GB with embedded models)
+docker pull ghcr.io/triepod-ai/mcp-server-qdrant-enhanced:latest
+
+# Quick run with host networking
+docker run -it --rm --network host \
+  -e QDRANT_URL="http://localhost:6333" \
+  -e COLLECTION_NAME="enhanced-collection" \
+  ghcr.io/triepod-ai/mcp-server-qdrant-enhanced:latest
+
+# Or use Docker Compose for persistent setup
+curl -sSL https://raw.githubusercontent.com/triepod-ai/mcp-server-qdrant-enhanced/main/docker-compose.yml -o docker-compose.yml
+docker-compose up -d
+```
+
+**Requirements:** Docker, running Qdrant instance
+
+### ⚡ What You Get
+
+After installation, you'll have access to:
+
+- **🎯 Enhanced MCP Tools**: `qdrant-store`, `qdrant-find`, `qdrant-list-collections`, etc.
+- **🧠 Smart Model Selection**: Automatic 384D/768D/1024D model selection based on collection type
+- **🚀 GPU Acceleration**: FastEmbed with CUDA support for lightning-fast embeddings
+- **📊 Production Collections**: 48 pre-configured collection types with optimal model mappings
+- **🔄 Zero-Config Operation**: Works out of the box with sensible defaults
+
+### 🔧 Quick Integration
+
+Add to your MCP client configuration:
+
+**Claude Desktop** (`claude_desktop_config.json`):
+```json
+{
+  "mcpServers": {
+    "qdrant-enhanced": {
+      "command": "mcp-server-qdrant-enhanced",
+      "args": ["--transport", "stdio"],
+      "env": {
+        "QDRANT_URL": "http://localhost:6333",
+        "COLLECTION_NAME": "your-collection"
+      }
+    }
+  }
+}
+```
+
+**Need help?** The setup script generates these configurations automatically! 🎊
+
+---
+
 ## Components
 
 ### Tools
@@ -169,36 +260,27 @@ Note: You cannot provide both `QDRANT_URL` and `QDRANT_LOCAL_PATH` at the same t
 > [!IMPORTANT]
 > Command-line arguments are not supported anymore! Please use environment variables for all configuration.
 
-## Installation and Running with Docker Compose
+## Installation Options
 
-### Quick Start (Recommended)
+> **⚡ Quick Setup Available!** For the fastest installation experience, see the [Quick Start](#-quick-start) section above which includes both NPM and Docker options with automated setup.
 
-Use the interactive setup script to deploy with enhanced multi-vector support:
+### Enhanced Installation Methods
 
-```bash
-git clone https://github.com/modelcontextprotocol/mcp-server-qdrant
-cd mcp-server-qdrant
-./setup-qdrant.sh
-```
+This enhanced fork offers multiple installation paths optimized for different use cases:
 
-This script will:
-- Detect your platform (Windows/macOS/Linux)
-- Configure Docker networking for Qdrant connectivity
-- Test connection to your Qdrant instance
-- Generate `.env` file with your settings
-- Create MCP client configuration
-- Build and start the Docker container with enhanced collection support
-- **Auto-configure collection-specific embedding models** for optimal performance
+1. **🎯 [Interactive Setup Script](#-one-command-setup-recommended)** - One command, fully guided setup
+2. **📦 [NPM Package](#-option-1-npm-package-development)** - Perfect for development and easy integration  
+3. **🐳 [Docker Container](#-option-2-docker-container-production)** - Production-ready with embedded models
 
-### Manual Docker Setup
+### Traditional Docker Compose Setup
 
-If you prefer manual configuration:
+For users who prefer manual Docker Compose configuration without the automated setup:
 
-1.  **Prerequisites:**
-    *   Docker and Docker Compose installed.
-    *   An existing Qdrant instance (either local or remote).
+**Prerequisites:**
+- Docker and Docker Compose installed.
+- An existing Qdrant instance (either local or remote).
 
-2.  **Configuration:**
+**Configuration:**
     *   Create a `.env` file to manage environment variables:
 
         ```dotenv
