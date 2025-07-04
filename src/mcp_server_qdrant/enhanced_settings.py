@@ -61,6 +61,7 @@ COLLECTION_MODEL_MAPPINGS = {
     "triepod-documentation": "bge-base-en",  # 768D - project documentation with semantic search
     "development_patterns": "bge-base-en",  # 768D - comprehensive development pattern analysis
     "claude_code_documentation": "bge-base-en",  # 768D - comprehensive Claude Code documentation analysis
+    "technical_documentation": "bge-large-en-v1.5",  # 1024D - complex technical documentation analysis
     
     # Low-dimensional models (384D) - Technical/debug content prioritizing speed
     "working_solutions": "all-minilm-l6-v2",  # 384D - efficient for technical solutions
