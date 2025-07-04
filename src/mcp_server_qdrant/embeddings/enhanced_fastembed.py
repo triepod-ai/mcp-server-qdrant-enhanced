@@ -2,6 +2,8 @@
 Enhanced FastEmbed provider that supports collection-specific models and dimensions.
 """
 import asyncio
+import os
+import sys
 from typing import Dict, List, Optional
 from fastembed import TextEmbedding
 from fastembed.common.model_description import DenseModelDescription
@@ -14,8 +16,6 @@ class EnhancedFastEmbedProvider(EmbeddingProvider):
     """
 
     def __init__(self, embedding_settings, default_model: str = "sentence-transformers/all-MiniLM-L6-v2"):
-        import sys
-        import os
         # print(f"[DEBUG] enhanced_fastembed.py: EnhancedFastEmbedProvider.__init__ called", file=sys.stderr)
         
         self.embedding_settings = embedding_settings
@@ -70,7 +70,6 @@ class EnhancedFastEmbedProvider(EmbeddingProvider):
         # Check if we already have this model cached
         if fastembed_model not in self._model_cache:
             try:
-                import sys
                 # print(f"[DEBUG] enhanced_fastembed.py: Loading new model {fastembed_model} for collection {collection_name}", file=sys.stderr)
                 self._model_cache[fastembed_model] = self._create_text_embedding(fastembed_model)
                 # print(f"[DEBUG] enhanced_fastembed.py: Model {fastembed_model} loaded successfully", file=sys.stderr)
