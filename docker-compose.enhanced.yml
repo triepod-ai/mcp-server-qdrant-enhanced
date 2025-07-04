@@ -4,11 +4,12 @@ services:
   mcp-server-enhanced:
     build: 
       context: .
-      dockerfile: Dockerfile.enhanced
+      dockerfile: Dockerfile.enhanced.cuda
     container_name: mcp-server-qdrant-enhanced
     stdin_open: true
     tty: true
     network_mode: host
+    runtime: nvidia
     deploy:
       resources:
         reservations:
@@ -27,7 +28,7 @@ services:
       - EMBEDDING_MODEL=sentence-transformers/all-MiniLM-L6-v2
       - PYTHONUNBUFFERED=1
       - NVIDIA_VISIBLE_DEVICES=all
-      - FASTEMBED_CUDA=false
+      - FASTEMBED_CUDA=true
     volumes:
       - ./logs:/app/logs:rw
     restart: unless-stopped
