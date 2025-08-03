@@ -5,7 +5,7 @@
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
 [![GitHub Actions](https://github.com/triepod-ai/mcp-server-qdrant-enhanced/workflows/Build%20and%20Publish/badge.svg)](https://github.com/triepod-ai/mcp-server-qdrant-enhanced/actions)
 
-> **🚀 Production-Ready Enhancement** of the original [mcp-server-qdrant](https://github.com/modelcontextprotocol/mcp-server-qdrant) with GPU acceleration, multi-vector support, and enterprise-grade deployment infrastructure.
+> **🚀 Production-Ready Enhancement** of the original [mcp-server-qdrant](https://github.com/qdrant/mcp-server-qdrant) with GPU acceleration, multi-vector support, and enterprise-grade deployment infrastructure.
 
 **Enhanced Model Context Protocol server** for [Qdrant](https://qdrant.tech/) vector database with advanced features including GPU acceleration, collection-specific embedding models, and production deployment automation.
 
