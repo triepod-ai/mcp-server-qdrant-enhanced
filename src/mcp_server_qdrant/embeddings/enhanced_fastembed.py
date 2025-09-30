@@ -70,12 +70,13 @@ class EnhancedFastEmbedProvider(EmbeddingProvider):
         # Check if we already have this model cached
         if fastembed_model not in self._model_cache:
             try:
-                # print(f"[DEBUG] enhanced_fastembed.py: Loading new model {fastembed_model} for collection {collection_name}", file=sys.stderr)
+                print(f"[DEBUG] enhanced_fastembed.py: Loading new model {fastembed_model} for collection {collection_name}", file=sys.stderr)
                 self._model_cache[fastembed_model] = self._create_text_embedding(fastembed_model)
-                # print(f"[DEBUG] enhanced_fastembed.py: Model {fastembed_model} loaded successfully", file=sys.stderr)
+                print(f"[DEBUG] enhanced_fastembed.py: Model {fastembed_model} loaded successfully", file=sys.stderr)
             except Exception as e:
-                # print(f"[ERROR] enhanced_fastembed.py: Failed to load model {fastembed_model}: {e}", file=sys.stderr)
-                # Fall back to default model
+                print(f"[ERROR] enhanced_fastembed.py: Failed to load model {fastembed_model} for collection {collection_name}: {e}", file=sys.stderr)
+                print(f"[ERROR] enhanced_fastembed.py: This will cause vector name mismatch! Expected: {self.embedding_settings.get_vector_name_for_collection(collection_name)}, but using default model vector name", file=sys.stderr)
+                # Fall back to default model but log the issue
                 return self._model_cache[self.default_model]
                 
         return self._model_cache[fastembed_model]
@@ -108,7 +109,21 @@ class EnhancedFastEmbedProvider(EmbeddingProvider):
         """
         collection_name = collection_name or self._current_collection
         if collection_name:
-            return self.embedding_settings.get_vector_name_for_collection(collection_name)
+            expected_vector_name = self.embedding_settings.get_vector_name_for_collection(collection_name)
+            
+            # Verify that the model we'll use matches the expected vector name
+            try:
+                model = self._get_model_for_collection(collection_name)
+                actual_fastembed_model = self.embedding_settings.get_fastembed_model_for_collection(collection_name)
+                
+                # Check if the model in cache matches what we expect
+                if actual_fastembed_model not in self._model_cache:
+                    print(f"[WARNING] enhanced_fastembed.py: Expected model {actual_fastembed_model} not in cache for collection {collection_name}", file=sys.stderr)
+                
+            except Exception as e:
+                print(f"[WARNING] enhanced_fastembed.py: Error verifying model for collection {collection_name}: {e}", file=sys.stderr)
+            
+            return expected_vector_name
         
         # Default behavior for backward compatibility
         model = self._get_model_for_collection(collection_name)

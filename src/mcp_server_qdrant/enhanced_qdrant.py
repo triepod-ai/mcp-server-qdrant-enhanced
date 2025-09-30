@@ -2,6 +2,7 @@
 Enhanced Qdrant connector with collection-specific embedding models and optimized configurations.
 """
 import logging
+import sys
 import uuid
 import asyncio
 from datetime import datetime
@@ -135,10 +136,12 @@ class EnhancedQdrantConnector:
         self._embedding_provider.set_collection_context(collection_name)
 
         # Embed the document using collection-specific model
+        print(f"[DEBUG] enhanced_qdrant.py: Starting store for collection '{collection_name}'", file=sys.stderr)
         embeddings = await self._embedding_provider.embed_documents([entry.content], collection_name)
 
         # Get collection-specific vector name
         vector_name = self._embedding_provider.get_vector_name(collection_name)
+        print(f"[DEBUG] enhanced_qdrant.py: Using vector_name '{vector_name}' for store in collection '{collection_name}'", file=sys.stderr)
         
         # Prepare payload
         payload = {"document": entry.content, "metadata": entry.metadata}
@@ -271,8 +274,10 @@ class EnhancedQdrantConnector:
         self._embedding_provider.set_collection_context(collection_name)
 
         # Embed the query using collection-specific model
+        print(f"[DEBUG] enhanced_qdrant.py: Starting search for collection '{collection_name}'", file=sys.stderr)
         query_vector = await self._embedding_provider.embed_query(query, collection_name)
         vector_name = self._embedding_provider.get_vector_name(collection_name)
+        print(f"[DEBUG] enhanced_qdrant.py: Using vector_name '{vector_name}' for collection '{collection_name}'", file=sys.stderr)
 
         try:
             # Execute search with retry logic
@@ -350,7 +355,18 @@ class EnhancedQdrantConnector:
                     with_vectors=False
                 )
             except Exception as e:
+                error_msg = str(e).lower()
+                print(f"[ERROR] enhanced_qdrant.py: Search failed on attempt {attempt + 1}: {e}", file=sys.stderr)
+                print(f"[ERROR] enhanced_qdrant.py: Collection: {collection_name}, Vector name: {vector_name}", file=sys.stderr)
+                
                 if attempt == max_retries - 1:
+                    # Check for vector name related errors
+                    if "vector name" in error_msg or "using" in error_msg:
+                        print(f"[ERROR] enhanced_qdrant.py: Vector name mismatch detected!", file=sys.stderr)
+                        print(f"[ERROR] enhanced_qdrant.py: Collection '{collection_name}' requires explicit vector name. "
+                              f"Expected: Check collection config vs actual usage. "
+                              f"Current model uses vector name: '{vector_name}'. "
+                              f"Verify collection was created with this vector name.", file=sys.stderr)
                     raise e
                 
                 wait_time = 2 ** attempt  # Exponential backoff: 1s, 2s, 4s
