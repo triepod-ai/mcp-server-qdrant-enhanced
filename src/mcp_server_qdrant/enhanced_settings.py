@@ -46,25 +46,28 @@ COLLECTION_MODEL_MAPPINGS = {
     # High-dimensional models (1024D) - Complex analysis requiring maximum precision
     "legal_analysis": "bge-large-en-v1.5",  # 1024D - complex legal document analysis
     "lodestar_legal_analysis": "bge-large-en-v1.5",  # 1024D - backward compatibility
+    "resume_projects": "bge-large-en-v1.5",  # 1024D - career content requires maximum precision
+    "job_search": "bge-large-en-v1.5",  # 1024D - strategic career content needs high-dimensional analysis
+    "project_achievements": "bge-large-en-v1.5",  # 1024D - career achievements need maximum precision
+    "technical_documentation": "bge-large-en-v1.5",  # 1024D - complex technical documentation analysis
     
     # Medium-dimensional models (768D) - Knowledge-intensive content
     "workplace_documentation": "bge-base-en-v1.5",  # 768D - business and workplace documents
     "lodestar_workplace_documentation": "bge-base-en-v1.5",  # 768D - backward compatibility
     "lessons_learned": "bge-base-en",  # 768D - comprehensive analysis
-    "resume_projects": "bge-base-en",  # 768D - career content benefits from precision
-    "job_search": "bge-base-en",  # 768D - strategic career content
     "mcp-optimization-knowledge": "bge-base-en",  # 768D - comprehensive technical knowledge
-    "project_achievements": "bge-base-en",  # 768D - career-focused accomplishments
     "project_documentation": "bge-base-en",  # 768D - cross-project documentation discovery
     "cross_project_todos": "bge-base-en",  # 768D - semantic task similarity for deduplication
     "contextual_knowledge": "bge-base-en",  # 768D - comprehensive contextual knowledge analysis
     "triepod-documentation": "bge-base-en",  # 768D - project documentation with semantic search
     "development_patterns": "bge-base-en",  # 768D - comprehensive development pattern analysis
     "claude_code_documentation": "bge-base-en",  # 768D - comprehensive Claude Code documentation analysis
-    "technical_documentation": "bge-large-en-v1.5",  # 1024D - complex technical documentation analysis
+    "session_dumps": "bge-base-en",  # 768D - complex session data analysis
+    "music_videos": "all-minilm-l6-v2",  # 384D - multimedia content, prioritizing speed and compatibility
     
     # Low-dimensional models (384D) - Technical/debug content prioritizing speed
     "working_solutions": "all-minilm-l6-v2",  # 384D - efficient for technical solutions
+    "triepod_website_context": "all-minilm-l6-v2",  # 384D - website context for speed
     "debugging_patterns": "all-minilm-l6-v2",  # 384D - efficient for debug patterns
     "development_solutions": "all-minilm-l6-v2",  # 384D - quick technical solutions
     "troubleshooting": "all-minilm-l6-v2",  # 384D - general troubleshooting and technical issues
