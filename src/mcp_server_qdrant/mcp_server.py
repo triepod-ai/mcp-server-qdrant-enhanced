@@ -4,7 +4,8 @@ Enhanced MCP server with collection-specific embedding models and optimized conf
 import json
 import logging
 from datetime import datetime
-from typing import Any, List, Dict
+from typing import Any, List, Dict, Annotated
+from pydantic import Field
 from mcp.server.fastmcp import Context, FastMCP
 from mcp_server_qdrant.enhanced_qdrant import Entry, Metadata, EnhancedQdrantConnector
 from mcp_server_qdrant.enhanced_settings import (
@@ -75,17 +76,17 @@ class QdrantMCPServer(FastMCP):
 
         async def qdrant_store(
             ctx: Context,
-            information: str,
-            collection_name: str,
-            metadata: Metadata = None,  # type: ignore
+            information: Annotated[str, Field(description="The text content to store in the vector database. Can be any text content including multi-line text, Unicode characters, and technical documentation. Empty strings are accepted but may not provide useful search results.")],
+            collection_name: Annotated[str, Field(description="Name of the Qdrant collection to store the document in. Must contain only alphanumeric characters, underscores, and hyphens (no spaces or special characters). Collections are auto-created with optimal configurations. Collection names trigger automatic model selection: legal/career content uses 1024D models, knowledge-intensive content uses 768D models, technical/debug content uses 384D models.")],
+            metadata: Annotated[Metadata, Field(default=None, description="Optional JSON metadata object to store alongside the document. Can be any valid JSON structure with unlimited nesting. Use for categorization, filtering, and additional context. Example: {'category': 'tutorial', 'tags': ['python'], 'author': {'name': 'John'}}.")] = None,  # type: ignore
         ) -> str:
             """
             Store information in Qdrant with collection-specific embedding model.
-            
+
             :param ctx: The context for the request.
-            :param information: The information to store.
-            :param collection_name: The name of the collection to store in.
-            :param metadata: JSON metadata to store with the information, optional.
+            :param information: The text content to store in the vector database. Can be any text content including multi-line text, Unicode characters, and technical documentation. Empty strings are accepted but may not provide useful search results.
+            :param collection_name: Name of the Qdrant collection to store the document in. Must contain only alphanumeric characters, underscores, and hyphens (no spaces or special characters). Collections are auto-created with optimal configurations. Collection names trigger automatic model selection: legal/career content uses 1024D models, knowledge-intensive content uses 768D models, technical/debug content uses 384D models.
+            :param metadata: Optional JSON metadata object to store alongside the document. Can be any valid JSON structure with unlimited nesting. Use for categorization, filtering, and additional context. Example: {"category": "tutorial", "tags": ["python"], "author": {"name": "John"}}.
             :return: A message indicating that the information was stored.
             """
             await ctx.debug(f"Enhanced storing information in collection {collection_name}")
@@ -102,21 +103,21 @@ class QdrantMCPServer(FastMCP):
 
         async def qdrant_find(
             ctx: Context,
-            query: str,
-            collection_name: str,
-            limit: int = 10,
-            score_threshold: float = 0.0
+            query: Annotated[str, Field(description="The search query text used to find similar documents through semantic vector search. Uses the same embedding model as the target collection for optimal results. Can be single words, phrases, or natural language questions. Empty queries may return all documents or error.")],
+            collection_name: Annotated[str, Field(description="Name of the existing collection to search within. Must be a valid, existing collection name. Non-existent collections will return error in results structure.")],
+            limit: Annotated[int, Field(default=10, description="Maximum number of results to return. Default is 10. Valid range is typically 1-1000+. Higher values may impact performance but provide more comprehensive results.")] = 10,
+            score_threshold: Annotated[float, Field(default=0.0, description="Minimum similarity score for results (0.0-1.0). Default is 0.0 (return all results regardless of score). Higher values filter out less similar results. Typical useful range is 0.3-0.8 depending on use case.")] = 0.0
         ) -> Dict[str, Any]:
             """
             Find memories in Qdrant with structured results.
-            
+
             Returns structured data instead of formatted strings for better programmatic use.
-            
+
             :param ctx: The context for the request.
-            :param query: The query to use for the search.
-            :param collection_name: The name of the collection to search in.
-            :param limit: Maximum number of results to return.
-            :param score_threshold: Minimum relevance score.
+            :param query: The search query text used to find similar documents through semantic vector search. Uses the same embedding model as the target collection for optimal results. Can be single words, phrases, or natural language questions. Empty queries may return all documents or error.
+            :param collection_name: Name of the existing collection to search within. Must be a valid, existing collection name. Non-existent collections will return error in results structure.
+            :param limit: Maximum number of results to return. Default is 10. Valid range is typically 1-1000+. Higher values may impact performance but provide more comprehensive results.
+            :param score_threshold: Minimum similarity score for results (0.0-1.0). Default is 0.0 (return all results regardless of score). Higher values filter out less similar results. Typical useful range is 0.3-0.8 depending on use case.
             :return: Structured search results with metadata.
             """
             await ctx.debug(f"Enhanced searching in collection {collection_name} for: {query}")
@@ -251,19 +252,19 @@ class QdrantMCPServer(FastMCP):
 
         async def qdrant_bulk_store(
             ctx: Context,
-            documents: List[str],
-            collection_name: str,
-            metadata_list: List[Metadata] = None,  # type: ignore
-            batch_size: int = 100
+            documents: Annotated[List[str], Field(description="List of text documents to store in batch for efficient processing. Each document can be any text content including multi-line text and Unicode characters. Empty lists are accepted but perform no operations. Each document follows the same validation rules as the information parameter in qdrant_store.")],
+            collection_name: Annotated[str, Field(description="Name of the Qdrant collection to store documents in. Same validation rules as other collection_name parameters - alphanumeric, underscores, hyphens only. Collection will be auto-created if it doesn't exist with optimal model selection based on name patterns.")],
+            metadata_list: Annotated[List[Metadata], Field(default=None, description="Optional list of JSON metadata objects corresponding to each document. If provided, must exactly match the length of the documents list. Each metadata object corresponds to the document at the same index. Can contain any valid JSON structures. Use None for no metadata on any document.")] = None,  # type: ignore
+            batch_size: Annotated[int, Field(default=100, description="Number of documents to process in each batch for memory and performance optimization. Default is 100. Recommended values: 100-500 for small documents, 10-50 for large documents, 1-10 for memory constrained environments. Affects memory usage and API call frequency.")] = 100
         ) -> Dict[str, Any]:
             """
             Store multiple documents efficiently in Qdrant with collection-specific embedding.
-            
+
             :param ctx: The context for the request.
-            :param documents: List of documents to store.
-            :param collection_name: The name of the collection to store in.
-            :param metadata_list: Optional list of metadata dicts (must match documents length).
-            :param batch_size: Number of documents to process in each batch.
+            :param documents: List of text documents to store in batch for efficient processing. Each document can be any text content including multi-line text and Unicode characters. Empty lists are accepted but perform no operations. Each document follows the same validation rules as the information parameter in qdrant_store.
+            :param collection_name: Name of the Qdrant collection to store documents in. Same validation rules as other collection_name parameters - alphanumeric, underscores, hyphens only. Collection will be auto-created if it doesn't exist with optimal model selection based on name patterns.
+            :param metadata_list: Optional list of JSON metadata objects corresponding to each document. If provided, must exactly match the length of the documents list. Each metadata object corresponds to the document at the same index. Can contain any valid JSON structures. Use None for no metadata on any document.
+            :param batch_size: Number of documents to process in each batch for memory and performance optimization. Default is 100. Recommended values: 100-500 for small documents, 10-50 for large documents, 1-10 for memory constrained environments. Affects memory usage and API call frequency.
             :return: Storage results with statistics.
             """
             await ctx.debug(f"Bulk storing {len(documents)} documents in collection {collection_name}")
