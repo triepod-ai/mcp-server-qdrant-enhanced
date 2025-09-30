@@ -3,7 +3,8 @@ Enhanced MCP server with collection-specific embedding models and optimized conf
 """
 import json
 import logging
-from typing import Any, List, Dict
+from typing import Any, List, Dict, Annotated
+from pydantic import Field
 from mcp.server.fastmcp import Context, FastMCP
 from mcp_server_qdrant.enhanced_qdrant import Entry, Metadata, EnhancedQdrantConnector
 from mcp_server_qdrant.enhanced_settings import (
@@ -74,17 +75,17 @@ class EnhancedQdrantMCPServer(FastMCP):
 
         async def qdrant_store(
             ctx: Context,
-            information: str,
-            collection_name: str,
-            metadata: Metadata = None,  # type: ignore
+            information: Annotated[str, Field(description="The text content to store in the vector database. Can be any text content including multi-line text, Unicode characters, and technical documentation. Empty strings are accepted but may not provide useful search results.")],
+            collection_name: Annotated[str, Field(description="Name of the Qdrant collection to store the document in. Must contain only alphanumeric characters, underscores, and hyphens (no spaces or special characters). Collections are auto-created with optimal configurations. Collection names trigger automatic model selection: legal/career content uses 1024D models, knowledge-intensive content uses 768D models, technical/debug content uses 384D models.")],
+            metadata: Annotated[Metadata, Field(default=None, description="Optional JSON metadata object to store alongside the document. Can be any valid JSON structure with unlimited nesting. Use for categorization, filtering, and additional context. Example: {'category': 'tutorial', 'tags': ['python'], 'author': {'name': 'John'}}.")] = None,  # type: ignore
         ) -> str:
             """
             Store information in Qdrant with collection-specific embedding model.
-            
+
             :param ctx: The context for the request.
-            :param information: The information to store.
-            :param collection_name: The name of the collection to store in.
-            :param metadata: JSON metadata to store with the information, optional.
+            :param information: The text content to store in the vector database. Can be any text content including multi-line text, Unicode characters, and technical documentation. Empty strings are accepted but may not provide useful search results.
+            :param collection_name: Name of the Qdrant collection to store the document in. Must contain only alphanumeric characters, underscores, and hyphens (no spaces or special characters). Collections are auto-created with optimal configurations. Collection names trigger automatic model selection: legal/career content uses 1024D models, knowledge-intensive content uses 768D models, technical/debug content uses 384D models.
+            :param metadata: Optional JSON metadata object to store alongside the document. Can be any valid JSON structure with unlimited nesting. Use for categorization, filtering, and additional context. Example: {"category": "tutorial", "tags": ["python"], "author": {"name": "John"}}.
             :return: A message indicating that the information was stored.
             """
             await ctx.debug(f"Enhanced storing information in collection {collection_name}")
@@ -101,15 +102,15 @@ class EnhancedQdrantMCPServer(FastMCP):
 
         async def qdrant_find(
             ctx: Context,
-            query: str,
-            collection_name: str,
+            query: Annotated[str, Field(description="The search query text used to find similar documents through semantic vector search. Uses the same embedding model as the target collection for optimal results. Can be single words, phrases, or natural language questions. Empty queries may return all documents or error.")],
+            collection_name: Annotated[str, Field(description="Name of the existing collection to search within. Must be a valid, existing collection name. Non-existent collections will return 'No information found' message.")],
         ) -> List[str]:
             """
             Find memories in Qdrant using collection-specific embedding model.
-            
+
             :param ctx: The context for the request.
-            :param query: The query to use for the search.
-            :param collection_name: The name of the collection to search in.
+            :param query: The search query text used to find similar documents through semantic vector search. Uses the same embedding model as the target collection for optimal results. Can be single words, phrases, or natural language questions. Empty queries may return all documents or error.
+            :param collection_name: Name of the existing collection to search within. Must be a valid, existing collection name. Non-existent collections will return "No information found" message.
             :return: A list of entries found.
             """
             await ctx.debug(f"Enhanced searching in collection {collection_name} for: {query}")
@@ -128,7 +129,7 @@ class EnhancedQdrantMCPServer(FastMCP):
         async def qdrant_list_collections(ctx: Context) -> str:
             """
             List all Qdrant collections with their configurations.
-            
+
             :param ctx: The context for the request.
             :return: Formatted list of collections with their info.
             """
@@ -158,12 +159,15 @@ class EnhancedQdrantMCPServer(FastMCP):
             except Exception as e:
                 return f"Error listing collections: {str(e)}"
 
-        async def qdrant_collection_info(ctx: Context, collection_name: str) -> str:
+        async def qdrant_collection_info(
+            ctx: Context,
+            collection_name: Annotated[str, Field(description="Name of the collection to inspect and get detailed information about. Can be any string - will return error message if collection doesn't exist or is inaccessible. Returns status, document count, vector configuration, optimization settings, and model information.")]
+        ) -> str:
             """
             Get detailed information about a specific collection.
-            
+
             :param ctx: The context for the request.
-            :param collection_name: Name of the collection to inspect.
+            :param collection_name: Name of the collection to inspect and get detailed information about. Can be any string - will return error message if collection doesn't exist or is inaccessible. Returns status, document count, vector configuration, optimization settings, and model information.
             :return: Detailed collection information.
             """
             await ctx.debug(f"Getting detailed info for collection: {collection_name}")
@@ -202,7 +206,7 @@ class EnhancedQdrantMCPServer(FastMCP):
         async def qdrant_model_mappings(ctx: Context) -> str:
             """
             Show current collection-to-model mappings.
-            
+
             :param ctx: The context for the request.
             :return: Current model mappings configuration.
             """
@@ -227,15 +231,15 @@ class EnhancedQdrantMCPServer(FastMCP):
 
         # Register tools with optimized descriptions (based on lessons learned)
         self.tool(
-            description="Store documents in Qdrant collections. Auto-creates collections with optimal models (768D BGE-Base for most collections, 384D MiniLM for simple tasks). Sub-100ms storage with batch support. Falls back to direct storage if caching unavailable."
+            description='Store documents in Qdrant collections with optional metadata. IMPORTANT: Use proper JSON syntax with double quotes (") for all keys and string values, not backticks (`). Example metadata: {"key": "value", "nested": {"data": 123}}. Auto-creates collections with optimal models: 1024D BGE-Large for career/legal content (max precision), 768D BGE-Base for knowledge-intensive content, 384D MiniLM for technical solutions (speed). Sub-100ms storage with batch support.'
         )(qdrant_store)
         
         self.tool(
-            description="Search Qdrant collections with Redis caching. <10ms cached searches, 60-90% cache hit rate. Uses collection-specific models for optimal results. Falls back to direct search if Redis unavailable."
+            description="Search Qdrant collections with Redis caching. Uses collection-specific models for optimal results: 1024D BGE-Large (legal_analysis, technical_documentation), 768D BGE-Base (lessons_learned, contextual_knowledge), 384D MiniLM (debugging_patterns, working_solutions, music_videos). <10ms cached searches, 60-90% cache hit rate. Returns structured JSON with scores and metadata."
         )(qdrant_find)
         
         self.tool(
-            description="List Qdrant collections with vector dimensions, model types, and point counts. <100ms response time. Shows status (green/yellow/red) and quantization settings. Returns error details for inaccessible collections."
+            description="List Qdrant collections with vector dimensions, model types, and point counts. Shows all collections with their embedding models: 1024D BGE-Large (legal/career), 768D BGE-Base (knowledge-intensive), 384D MiniLM (technical/debug). <100ms response time. Shows status (green/yellow/red) and quantization settings."
         )(qdrant_list_collections)
         
         self.tool(
@@ -243,5 +247,5 @@ class EnhancedQdrantMCPServer(FastMCP):
         )(qdrant_collection_info)
         
         self.tool(
-            description="Show collection-to-model mappings. Lists 5 current collection configurations: dimensions (384D/768D/1024D), FastEmbed models (MiniLM/BGE-Base/BGE-Large), vector names. Reference for manual collection setup."
+            description="Show collection-to-model mappings with all three model tiers. 1024D BGE-Large: career/legal collections (resume_projects, legal_analysis, technical_documentation). 768D BGE-Base: knowledge-intensive collections (lessons_learned, contextual_knowledge, development_patterns). 384D MiniLM: technical/debug collections (debugging_patterns, working_solutions, music_videos). Reference for optimal collection setup."
         )(qdrant_model_mappings)
