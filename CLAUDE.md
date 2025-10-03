@@ -72,6 +72,49 @@ The project maintains both **enhanced** and **legacy** implementations:
 - **Legacy**: Original `*.py` files for backward compatibility
 - **Entry Points**: `enhanced_main.py` vs `main.py` for different deployment modes
 
+### Dual Transport Architecture
+
+The server supports two MCP transport modes running simultaneously in separate containers:
+
+#### STDIO Transport (Default)
+- **Container**: `mcp-server-qdrant-enhanced`
+- **Entry Point**: `enhanced_main.py`
+- **Use Case**: Claude Desktop, local MCP clients
+- **Communication**: Standard input/output pipes
+- **Benefits**: Simple setup, automatic process management
+
+#### Streamable HTTP Transport (New - October 2025)
+- **Container**: `mcp-server-qdrant-http`
+- **Entry Point**: `enhanced_http_app.py` (ASGI module)
+- **Port**: 10650
+- **Endpoint**: `/mcp` (GET, POST, DELETE methods)
+- **Use Case**: MCP Inspector, remote access, testing
+- **Benefits**: HTTP-based access, Inspector compatibility
+
+**Key Files**:
+```
+src/mcp_server_qdrant/
+├── enhanced_server.py          # FastMCP server with tool definitions (shared)
+├── enhanced_main.py            # STDIO transport entry point
+├── enhanced_http_app.py        # HTTP transport ASGI module
+└── enhanced_http_main.py       # Alternative HTTP entry point
+
+Dockerfile.enhanced.cuda        # STDIO container
+Dockerfile.enhanced.http        # HTTP container
+docker-compose.enhanced.yml     # Orchestrates both containers
+```
+
+**Critical Implementation Note**:
+The HTTP transport uses `mcp.streamable_http_app()` NOT `mcp.sse_app()`. These are different MCP transports:
+- `streamable_http_app()` → `/mcp` endpoint (MCP Inspector compatible) ✅
+- `sse_app()` → `/sse` and `/messages` endpoints (different protocol) ❌
+
+Both containers share the same:
+- Qdrant database (`localhost:6333` via `host.docker.internal`)
+- GPU acceleration and CUDA support
+- Collection-specific embedding models
+- Tool definitions and schemas
+
 ### Core Architecture Components
 
 #### 1. Enhanced Settings System (`enhanced_settings.py`)
@@ -245,4 +288,10 @@ The test suite covers enhanced settings, Qdrant integration, FastEmbed embedding
 For comprehensive project context and guidance, reference these documentation files:
 
 ### Recent Documentation Updates
+- **[Streamable HTTP Transport](./README.md#-transport-options)** - Added dual transport support with MCP Inspector compatibility (Added: 2025-10-03)
+  - New `enhanced_http_app.py` for streamable HTTP transport
+  - Docker container on port 10650 with `/mcp` endpoint
+  - Complete MCP Inspector integration guide
+  - SSE vs Streamable HTTP implementation notes
+  - Lessons learned stored in both Chroma (`mcp_integration_patterns`) and Qdrant (`mcp_streamable_http_patterns`)
 - [PROJECT_STATUS.md](./PROJECT_STATUS.md) - Project development progress and session history tracking (Added: 2025-01-23)

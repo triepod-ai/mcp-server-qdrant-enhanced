@@ -20,6 +20,21 @@ This fork transforms the basic MCP server into a **production-ready solution** w
 - **⚡ Zero-Config Setup**: Interactive installer with platform detection
 - **🔄 48 Production Collections**: Battle-tested with real workloads
 
+## MCP SDK Version
+
+**Current Version**: Python MCP SDK 1.15.0 (upgraded October 1, 2025)
+
+This server uses the latest Model Context Protocol SDK with enhanced features:
+- Paginated list decorators for prompts, resources, and tools
+- Protected resource metadata improvements
+- Enhanced security with HTTP 403 for invalid Origin headers
+- Default values in elicitation schemas
+- Additional metadata and icon support
+
+**Previous Version**: 1.14.1 → **Upgrade Jump**: Minor version update with new protocol features
+
+For complete MCP protocol documentation, see [Model Context Protocol](https://modelcontextprotocol.io/).
+
 ## Overview
 
 An enhanced Model Context Protocol server for keeping and retrieving memories in the Qdrant vector search engine with **structured data returns**, **TypeScript-inspired type validation**, **collection-specific embedding models**, and **optimized 768D career collections**.
@@ -143,6 +158,132 @@ Add to your MCP client configuration:
 ```
 
 **Need help?** The setup script generates these configurations automatically! 🎊
+
+---
+
+## 🔌 Transport Options
+
+The Enhanced Qdrant MCP Server supports two transport modes for different use cases:
+
+### STDIO Transport (Default)
+
+**Use Case**: Direct integration with MCP clients like Claude Desktop, VS Code extensions
+**Benefits**: Simple setup, automatic process management, secure local communication
+**Recommended For**: Development, Claude Desktop, local MCP clients
+
+```bash
+# Using NPM package
+mcp-server-qdrant-enhanced --transport stdio
+
+# Using Docker with stdio (default)
+docker-compose -f docker-compose.enhanced.yml up -d mcp-server-enhanced
+```
+
+**Claude Desktop Configuration**:
+```json
+{
+  "qdrant-enhanced": {
+    "command": "mcp-server-qdrant-enhanced",
+    "args": ["--transport", "stdio"],
+    "env": {
+      "QDRANT_URL": "http://localhost:6333",
+      "COLLECTION_NAME": "your-collection"
+    }
+  }
+}
+```
+
+### Streamable HTTP Transport (New!)
+
+**Use Case**: MCP Inspector testing, remote connections, web-based clients
+**Benefits**: HTTP-based access, MCP Inspector compatibility, network accessibility
+**Recommended For**: Testing, debugging, MCP Inspector, remote access
+
+```bash
+# Using Docker with HTTP transport
+docker-compose -f docker-compose.enhanced.yml up -d mcp-server-qdrant-http
+```
+
+**MCP Inspector Connection**:
+- **URL**: `http://localhost:10650/mcp`
+- **Transport Type**: `streamable-http`
+
+**Features**:
+- ✅ Full MCP protocol support with proper tool schemas
+- ✅ Compatible with MCP Inspector for interactive testing
+- ✅ Runs on port 10650 with GET, POST, DELETE methods
+- ✅ StreamableHTTP session management
+- ✅ Same GPU acceleration and model selection as STDIO transport
+
+**Connection Verification**:
+```bash
+# Check container is running
+docker ps --filter name=mcp-server-qdrant-http
+
+# View logs for StreamableHTTP session manager confirmation
+docker logs mcp-server-qdrant-http --tail 20
+# Look for: "StreamableHTTP session manager started"
+
+# Test endpoint
+curl -I http://localhost:10650/mcp
+# Expected: HTTP/1.1 405 with Allow: GET, POST, DELETE
+```
+
+### Dual Transport Setup
+
+Both transports can run simultaneously in separate containers:
+
+```bash
+# Start both STDIO and HTTP containers
+docker-compose -f docker-compose.enhanced.yml up -d
+
+# Verify both are running
+docker ps --filter name=mcp-server-qdrant
+```
+
+This allows you to:
+- Use STDIO transport for Claude Desktop integration
+- Use HTTP transport for MCP Inspector testing
+- Both share the same Qdrant database at `localhost:6333`
+
+### Transport Comparison
+
+| Feature | STDIO Transport | HTTP Transport |
+|---------|----------------|----------------|
+| **Primary Use** | Local MCP clients | Remote access, testing |
+| **Claude Desktop** | ✅ Recommended | ❌ Not supported |
+| **MCP Inspector** | ❌ Not compatible | ✅ Fully supported |
+| **Network Access** | Local only | HTTP accessible |
+| **Port** | N/A (stdio pipes) | 10650 |
+| **Endpoint** | N/A | `/mcp` |
+| **Session Management** | Process-based | HTTP session-based |
+| **Setup Complexity** | Simple | Moderate |
+| **GPU Acceleration** | ✅ Full support | ✅ Full support |
+| **Model Selection** | ✅ All models | ✅ All models |
+
+### Important Implementation Notes
+
+#### SSE vs Streamable HTTP
+⚠️ **Critical**: `mcp.sse_app()` ≠ `mcp.streamable_http_app()`
+
+These are **different MCP transports** with different endpoints:
+- **SSE Transport**: `/sse` and `/messages` endpoints (not MCP Inspector compatible)
+- **Streamable HTTP**: `/mcp` endpoint (MCP Inspector compatible)
+
+**Correct Implementation** (see `enhanced_http_app.py`):
+```python
+from mcp_server_qdrant.enhanced_server import mcp
+
+# ✅ CORRECT: For MCP Inspector and streamable HTTP clients
+app = mcp.streamable_http_app()
+
+# ❌ WRONG: Creates incompatible SSE endpoints
+# app = mcp.sse_app()  # Don't use this!
+```
+
+For complete implementation details and troubleshooting, see the comprehensive guide in:
+- Chroma collection: `mcp_integration_patterns`
+- Qdrant collection: `mcp_streamable_http_patterns`
 
 ---
 
