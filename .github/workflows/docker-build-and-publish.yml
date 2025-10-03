@@ -178,9 +178,14 @@ jobs:
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "### 📦 Available Installation Methods:" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "**NPM Package:**" >> $GITHUB_STEP_SUMMARY
+          echo "**PyPI Package:**" >> $GITHUB_STEP_SUMMARY
           echo '```bash' >> $GITHUB_STEP_SUMMARY
-          echo "npm install -g @triepod-ai/mcp-server-qdrant-enhanced@${{ steps.version.outputs.version }}" >> $GITHUB_STEP_SUMMARY
+          echo "pip install mcp-server-qdrant" >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Using uvx (recommended):**" >> $GITHUB_STEP_SUMMARY
+          echo '```bash' >> $GITHUB_STEP_SUMMARY
+          echo "uvx mcp-server-qdrant" >> $GITHUB_STEP_SUMMARY
           echo '```' >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "**Docker Image:**" >> $GITHUB_STEP_SUMMARY
