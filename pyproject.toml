@@ -6,7 +6,7 @@ readme = "README.md"
 requires-python = ">=3.10"
 license = "Apache-2.0"
 dependencies = [
-    "mcp[cli]>=1.14.1",
+    "mcp[cli]>=1.15.0",
     "fastembed>=0.6.0",
     "qdrant-client>=1.12.0",
     "pydantic>=2.10.6",
@@ -30,6 +30,7 @@ dev-dependencies = [
 [project.scripts]
 mcp-server-qdrant = "mcp_server_qdrant.main:main"
 mcp-server-qdrant-enhanced = "mcp_server_qdrant.enhanced_main:main"
+mcp-server-qdrant-http = "mcp_server_qdrant.enhanced_http_main:main"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   mcp-server-enhanced:
-    build: 
+    build:
       context: .
       dockerfile: Dockerfile.enhanced.cuda
     container_name: mcp-server-qdrant-enhanced
@@ -29,6 +29,40 @@ services:
       - PYTHONUNBUFFERED=1
       - NVIDIA_VISIBLE_DEVICES=all
       - FASTEMBED_CUDA=true
+    volumes:
+      - ./logs:/app/logs:rw
+    restart: unless-stopped
+
+  mcp-server-qdrant-http:
+    build:
+      context: .
+      dockerfile: Dockerfile.enhanced.http
+    container_name: mcp-server-qdrant-http
+    ports:
+      - "10650:10650"
+    runtime: nvidia
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    environment:
+      - QDRANT_URL=http://host.docker.internal:6333
+      - COLLECTION_NAME=working_solutions
+      - QDRANT_AUTO_CREATE_COLLECTIONS=true
+      - QDRANT_ENABLE_QUANTIZATION=true
+      - QDRANT_HNSW_EF_CONSTRUCT=200
+      - QDRANT_HNSW_M=16
+      - EMBEDDING_PROVIDER=fastembed
+      - EMBEDDING_MODEL=sentence-transformers/all-MiniLM-L6-v2
+      - PYTHONUNBUFFERED=1
+      - NVIDIA_VISIBLE_DEVICES=all
+      - FASTEMBED_CUDA=true
+      - MCP_PORT=10650
+      - UVICORN_HOST=0.0.0.0
+      - UVICORN_PORT=10650
     volumes:
       - ./logs:/app/logs:rw
     restart: unless-stopped
