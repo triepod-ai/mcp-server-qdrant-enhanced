@@ -2,23 +2,78 @@
 
 This document tracks the development progress and session history for the mcp-server-qdrant project.
 
-## Current Status (2025-01-25)
+## Current Status (2025-10-03)
 
-### ✅ Production Ready
-- **MCP SDK v1.14.1**: Successfully upgraded from v1.3.0
+### ✅ Production Ready with Dual Transport
+- **MCP SDK v1.15.0**: Latest Model Context Protocol support
+- **Dual Transport**: STDIO + Streamable HTTP running simultaneously
+- **MCP Inspector**: Full compatibility with HTTP transport on port 10650
 - **GPU Acceleration**: CUDA 12.x with cuDNN 9.13.0 fully operational
 - **Performance**: 30% improvement in embedding generation (0.019s → 0.013s)
 - **Stress Testing**: 100% success rate with 500 documents
 - **System Health**: All containers running optimally with GPU runtime
 
 ### 📊 Key Metrics
+- **Transport Options**: STDIO (Claude Desktop) + HTTP (MCP Inspector)
+- **HTTP Endpoint**: `http://localhost:10650/mcp` with GET, POST, DELETE methods
 - **Storage Performance**: 18ms average (down from 19ms)
 - **Search Performance**: 8ms average with 106 queries/second
 - **GPU Utilization**: NVIDIA RTX 3080 Ti with 12GB VRAM
 - **Success Rate**: 100% across comprehensive stress testing
-- **Documentation**: Updated README.md and CLAUDE.md with latest specifications
+- **Documentation**: Comprehensive transport guide in both Chroma and Qdrant
 
 ## Timeline
+
+## Session Export - 2025-10-03 17:30:00
+
+**Streamable HTTP Transport Implementation & MCP Inspector Integration**
+
+Successfully implemented dual transport architecture with comprehensive MCP Inspector support:
+
+### Key Accomplishments
+1. **Streamable HTTP Transport**: Created dedicated HTTP container with FastMCP's `streamable_http_app()`
+2. **MCP Inspector Integration**: Full compatibility with MCP Inspector on `http://localhost:10650/mcp`
+3. **Dual Container Setup**: STDIO and HTTP transports running simultaneously sharing same Qdrant database
+4. **Critical Discovery**: Documented SSE vs Streamable HTTP transport differences (different endpoints!)
+5. **Comprehensive Documentation**: 18KB guide stored in both Chroma and Qdrant collections
+
+### Technical Implementation
+- **New Files Created**:
+  - `src/mcp_server_qdrant/enhanced_http_app.py` - ASGI app module for uvicorn
+  - `Dockerfile.enhanced.http` - HTTP-specific Docker container
+  - Updated `docker-compose.enhanced.yml` - Added HTTP service on port 10650
+
+- **Transport Architecture**:
+  - **STDIO**: `mcp-server-qdrant-enhanced` container for Claude Desktop
+  - **HTTP**: `mcp-server-qdrant-http` container for MCP Inspector/remote access
+  - **Shared**: Same Qdrant DB at `localhost:6333` via `host.docker.internal`
+
+- **Endpoint Configuration**:
+  - **Correct**: `mcp.streamable_http_app()` → `/mcp` endpoint ✅
+  - **Wrong**: `mcp.sse_app()` → `/sse` and `/messages` (incompatible) ❌
+
+### Lessons Learned & Documentation
+- **SSE ≠ Streamable HTTP**: Critical distinction between transport types
+- **Port Mapping**: Changed from `network_mode: host` to proper `ports` mapping
+- **Docker Networking**: Use `host.docker.internal` for container-to-host communication
+- **FastMCP Pattern**: Trust built-in methods, don't manually implement ASGI handlers
+
+### Documentation Updates
+1. **README.md**: Added comprehensive "Transport Options" section with comparison table
+2. **CLAUDE.md**: Added "Dual Transport Architecture" subsection with implementation notes
+3. **Memory Systems**:
+   - Chroma collection `mcp_integration_patterns`: Full implementation guide
+   - Qdrant collection `mcp_streamable_http_patterns`: Complete lessons learned
+4. **Searchable Topics**: MCP Inspector setup, SSE vs HTTP, transport comparison, debugging
+
+### Validation Results
+- ✅ HTTP server running on port 10650
+- ✅ StreamableHTTP session manager started
+- ✅ MCP Inspector successfully connects
+- ✅ Tool schemas properly generated
+- ✅ Both transports operational simultaneously
+- ✅ GPU acceleration working on HTTP transport
+- ✅ Collection-specific models routing correctly
 
 ## Session Export - 2025-01-25 11:42:41
 
