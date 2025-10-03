@@ -1,0 +1,67 @@
+# Use CUDA 12.x runtime image for onnxruntime-gpu compatibility
+FROM nvidia/cuda:12.9.1-runtime-ubuntu22.04
+
+WORKDIR /app
+
+# Set CUDA environment variables as documented
+ENV NVIDIA_VISIBLE_DEVICES=all
+ENV NVIDIA_DRIVER_CAPABILITIES=compute,utility
+ENV CUDA_HOME=/usr/local/cuda
+ENV PATH=${CUDA_HOME}/bin:${PATH}
+ENV LD_LIBRARY_PATH=${CUDA_HOME}/lib64:${LD_LIBRARY_PATH}
+
+# Install Python 3, pip, and cuDNN 9.x for CUDA 12.x support
+RUN apt-get update && \
+    apt-get install -y python3 python3-pip python3-venv && \
+    apt-get install -y --no-install-recommends libcudnn9-dev-cuda-12 libcudnn9-cuda-12 && \
+    ldconfig && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
+# Copy the source code
+COPY . /app
+
+# Install uv for package management
+RUN python3 -m pip install --no-cache-dir uv
+
+# Install dependencies with CUDA support (add onnxruntime-gpu for CUDA)
+RUN uv pip install --system \
+    fastembed>=0.6.0 \
+    qdrant-client>=1.12.0 \
+    pydantic>=2.10.6 \
+    "mcp[cli]>=1.3.0" \
+    onnxruntime-gpu
+
+# Add source directory to Python path
+ENV PYTHONPATH=/app/src
+
+# Set environment variables with defaults
+ENV QDRANT_URL=""
+ENV QDRANT_API_KEY=""
+ENV COLLECTION_NAME="working_solutions"
+ENV EMBEDDING_MODEL="sentence-transformers/all-MiniLM-L6-v2"
+ENV QDRANT_AUTO_CREATE_COLLECTIONS="true"
+ENV QDRANT_ENABLE_QUANTIZATION="true"
+ENV QDRANT_HNSW_EF_CONSTRUCT="200"
+ENV QDRANT_HNSW_M="16"
+ENV EMBEDDING_PROVIDER="fastembed"
+ENV FASTEMBED_CUDA="true"
+
+# Pre-download embedding models (use CPU providers during build)
+RUN python3 -c "\
+import sys; \
+sys.path.insert(0, 'src'); \
+from fastembed import TextEmbedding; \
+models_to_download = ['BAAI/bge-large-en-v1.5', 'BAAI/bge-base-en-v1.5', 'BAAI/bge-base-en', 'sentence-transformers/all-MiniLM-L6-v2']; \
+print('Pre-downloading embedding models for enhanced multi-vector support...'); \
+[print(f'Downloading {model}...') or TextEmbedding(model, providers=['CPUExecutionProvider']) and print(f'✓ {model} downloaded successfully') for model in models_to_download]; \
+print('✓ All embedding models pre-downloaded')"
+
+# Expose HTTP port for SSE transport
+EXPOSE 10650
+
+# Use unbuffered output for proper HTTP communication
+ENV PYTHONUNBUFFERED=1
+
+# Run using uvicorn directly with custom port on the ASGI app
+CMD ["python3", "-m", "uvicorn", "mcp_server_qdrant.enhanced_http_app:app", "--host", "0.0.0.0", "--port", "10650"]
