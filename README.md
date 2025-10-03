@@ -1,6 +1,6 @@
 # Enhanced Qdrant MCP Server
 
-[![NPM Package](https://img.shields.io/npm/v/@triepod-ai/mcp-server-qdrant-enhanced)](https://www.npmjs.com/package/@triepod-ai/mcp-server-qdrant-enhanced)
+[![PyPI Package](https://img.shields.io/pypi/v/mcp-server-qdrant)](https://pypi.org/project/mcp-server-qdrant/)
 [![Docker Image](https://img.shields.io/docker/v/triepod-ai/mcp-server-qdrant-enhanced?label=docker)](https://github.com/triepod-ai/mcp-server-qdrant-enhanced/pkgs/container/mcp-server-qdrant-enhanced)
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
 [![GitHub Actions](https://github.com/triepod-ai/mcp-server-qdrant-enhanced/workflows/Build%20and%20Publish/badge.svg)](https://github.com/triepod-ai/mcp-server-qdrant-enhanced/actions)
@@ -14,9 +14,9 @@
 This fork transforms the basic MCP server into a **production-ready solution** with:
 
 - **🚀 10x Performance**: GPU acceleration with FastEmbed and CUDA support
-- **🧠 Smart Model Selection**: Automatic 384D/768D/1024D embedding selection based on collection type  
+- **🧠 Smart Model Selection**: Automatic 384D/768D/1024D embedding selection based on collection type
 - **🐳 Production Infrastructure**: Complete Docker automation with 4.49GB optimized containers
-- **📦 Dual Installation**: NPM package + Docker options for maximum accessibility
+- **📦 Flexible Installation**: PyPI package + Docker options for maximum accessibility
 - **⚡ Zero-Config Setup**: Interactive installer with platform detection
 - **🔄 48 Production Collections**: Battle-tested with real workloads
 
@@ -83,28 +83,31 @@ curl -sSL https://raw.githubusercontent.com/triepod-ai/mcp-server-qdrant-enhance
 ```
 
 This script will:
-- ✅ Detect your platform and requirements  
-- ✅ Let you choose between NPM or Docker installation
+- ✅ Detect your platform and requirements
+- ✅ Let you choose between Python/PyPI or Docker installation
 - ✅ Configure Qdrant connection settings
 - ✅ Generate MCP client configurations (Claude Desktop, VS Code)
 - ✅ Test your setup and validate connectivity
 
-### 📦 Option 1: NPM Package (Development)
+### 📦 Option 1: Python Package via PyPI (Development)
 
 Perfect for developers who want direct command access and easy integration:
 
 ```bash
-# Install globally
-npm install -g @triepod-ai/mcp-server-qdrant-enhanced
+# Install using pip
+pip install mcp-server-qdrant
+
+# Or install using uvx (recommended for MCP tools)
+uvx mcp-server-qdrant
 
 # Verify installation
-mcp-server-qdrant-enhanced --help
+mcp-server-qdrant --help
 
 # Quick test (requires running Qdrant instance)
-QDRANT_URL="http://localhost:6333" COLLECTION_NAME="test" mcp-server-qdrant-enhanced --transport stdio
+QDRANT_URL="http://localhost:6333" COLLECTION_NAME="test" mcp-server-qdrant --transport stdio
 ```
 
-**Requirements:** Node.js 18+, Python 3.10+, MCP SDK v1.14.1+, running Qdrant instance, optional CUDA 12.x for GPU acceleration
+**Requirements:** Python 3.10+, MCP SDK v1.15.0+, running Qdrant instance, optional CUDA 12.x for GPU acceleration
 
 ### 🐳 Option 2: Docker Container (Production)
 
@@ -146,8 +149,8 @@ Add to your MCP client configuration:
 {
   "mcpServers": {
     "qdrant-enhanced": {
-      "command": "mcp-server-qdrant-enhanced",
-      "args": ["--transport", "stdio"],
+      "command": "uvx",
+      "args": ["mcp-server-qdrant", "--transport", "stdio"],
       "env": {
         "QDRANT_URL": "http://localhost:6333",
         "COLLECTION_NAME": "your-collection"
@@ -172,8 +175,8 @@ The Enhanced Qdrant MCP Server supports two transport modes for different use ca
 **Recommended For**: Development, Claude Desktop, local MCP clients
 
 ```bash
-# Using NPM package
-mcp-server-qdrant-enhanced --transport stdio
+# Using Python package via uvx (recommended)
+uvx mcp-server-qdrant --transport stdio
 
 # Using Docker with stdio (default)
 docker-compose -f docker-compose.enhanced.yml up -d mcp-server-enhanced
@@ -183,8 +186,8 @@ docker-compose -f docker-compose.enhanced.yml up -d mcp-server-enhanced
 ```json
 {
   "qdrant-enhanced": {
-    "command": "mcp-server-qdrant-enhanced",
-    "args": ["--transport", "stdio"],
+    "command": "uvx",
+    "args": ["mcp-server-qdrant", "--transport", "stdio"],
     "env": {
       "QDRANT_URL": "http://localhost:6333",
       "COLLECTION_NAME": "your-collection"
@@ -440,14 +443,14 @@ Note: You cannot provide both `QDRANT_URL` and `QDRANT_LOCAL_PATH` at the same t
 
 ## Installation Options
 
-> **⚡ Quick Setup Available!** For the fastest installation experience, see the [Quick Start](#-quick-start) section above which includes both NPM and Docker options with automated setup.
+> **⚡ Quick Setup Available!** For the fastest installation experience, see the [Quick Start](#-quick-start) section above which includes Python/PyPI and Docker options with automated setup.
 
 ### Enhanced Installation Methods
 
 This enhanced fork offers multiple installation paths optimized for different use cases:
 
 1. **🎯 [Interactive Setup Script](#-one-command-setup-recommended)** - One command, fully guided setup
-2. **📦 [NPM Package](#-option-1-npm-package-development)** - Perfect for development and easy integration  
+2. **📦 [Python Package via PyPI](#-option-1-python-package-via-pypi-development)** - Perfect for development and easy integration
 3. **🐳 [Docker Container](#-option-2-docker-container-production)** - Production-ready with embedded models
 
 ### Traditional Docker Compose Setup
@@ -878,9 +881,12 @@ mcp dev src/mcp_server_qdrant/enhanced_main.py
 #### Production Testing
 
 ```bash
-# Test NPM package installation
-npm install -g @triepod-ai/mcp-server-qdrant-enhanced
-mcp-server-qdrant-enhanced --help
+# Test PyPI package installation
+pip install mcp-server-qdrant
+mcp-server-qdrant --help
+
+# Or test with uvx
+uvx mcp-server-qdrant --help
 
 # Test Docker container
 docker run -it --rm ghcr.io/triepod-ai/mcp-server-qdrant-enhanced:latest --help

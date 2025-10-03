@@ -1,7 +1,7 @@
 {
   "name": "@triepod-ai/mcp-server-qdrant-enhanced",
   "version": "0.7.1",
-  "description": "Enhanced MCP server for Qdrant with GPU acceleration, multi-vector support, and production infrastructure",
+  "description": "Enhanced MCP server for Qdrant with GPU acceleration, multi-vector support, and production infrastructure. NOTE: This is a Python package distributed via PyPI, not npm. This package.json is for metadata only.",
   "keywords": [
     "mcp",
     "model-context-protocol",
@@ -70,7 +70,7 @@
   },
   "publishConfig": {
     "access": "public",
-    "registry": "https://registry.npmjs.org/"
+    "note": "This package is distributed via PyPI (pip install mcp-server-qdrant), not npm"
   },
   "enhanced-features": {
     "gpu-acceleration": true,
@@ -87,7 +87,8 @@
     "quantization-enabled": true
   },
   "installation-methods": {
-    "npm": "npm install -g @triepod-ai/mcp-server-qdrant-enhanced",
+    "pip": "pip install mcp-server-qdrant",
+    "uvx": "uvx mcp-server-qdrant",
     "docker": "docker pull ghcr.io/triepod-ai/mcp-server-qdrant-enhanced",
     "setup-script": "curl -sSL https://raw.githubusercontent.com/triepod-ai/mcp-server-qdrant-enhanced/main/setup-qdrant-enhanced.sh | bash"
   }
