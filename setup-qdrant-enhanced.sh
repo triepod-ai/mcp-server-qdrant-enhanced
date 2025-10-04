@@ -371,7 +371,7 @@ prompt_installation_method() {
     echo
     echo "2) Docker Container (Recommended for production)"
     echo "   - Complete isolation, no local dependencies"
-    echo "   - Pre-built 4.49GB image with all models embedded"
+    echo "   - Pre-built 16.5GB image with CUDA + cuDNN + models"
     echo "   - GPU acceleration ready"
     echo
     

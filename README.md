@@ -55,15 +55,17 @@ An enhanced Model Context Protocol server for keeping and retrieving memories in
 ### 📈 Performance Metrics (Latest v1.14.1 + CUDA 12.x)
 
 **GPU-Accelerated Performance:**
-- **Embedding Generation:** 13ms per document (30% improvement over previous versions)
-- **Storage Operations:** 18ms average (100% success rate with 500 documents)
-- **Search Performance:** 8ms average with 106 queries/second throughput
+- **Embedding Generation:** 12-13ms per document (30% improvement over previous versions)
+- **Storage Operations:** 18-95ms depending on model complexity (100% success rate with 500 documents)
+- **Search Performance:** Sub-50ms with optimized HNSW indexing
 - **MCP SDK:** v1.14.1 with enhanced stability and reduced latency
 
-**Collection-Specific Optimizations:**
-- **Technical Documents:** ~18ms with 384D embeddings (speed-optimized)
-- **Knowledge Base:** ~50ms with 768D embeddings (balanced performance)
-- **Legal Documents:** ~200ms with 1024D embeddings (maximum precision)
+**Collection-Specific Performance (Validated):**
+- **Technical Documents:** ~18ms with 384D embeddings (speed-optimized for fast retrieval)
+- **Knowledge Base:** ~560ms with 768D embeddings (balanced precision/performance)
+- **Legal Documents:** ~2350ms with 1024D embeddings (maximum precision for complex content)
+
+> **📊 Benchmark Methodology**: Performance metrics based on validated testing with NVIDIA RTX 3080 Ti (12GB VRAM). See [VALIDATION_REPORT.md](VALIDATION_REPORT.md) for detailed benchmark results and methodology. Performance varies by hardware, workload, and model selection.
 
 **System Requirements:**
 - **CUDA:** Version 12.x with cuDNN 9.13.0 for optimal GPU acceleration
@@ -416,7 +418,7 @@ for result in response["results"]:
 - **Production Validated**: Sub-second response times across 48 active collections
 
 ### 🔧 Advanced Architecture
-- **Separation of Concerns**: MCP server (4.49GB with models) + Qdrant DB (279MB storage)
+- **Separation of Concerns**: MCP server (16.5GB with CUDA + models) + Qdrant DB (279MB storage)
 - **Multi-Vector Support**: Automatic model selection based on collection naming patterns
 - **Zero-Config Deployment**: Interactive setup with platform detection and validation
 - **CI/CD Automation**: GitHub Actions with multi-architecture builds and security scanning
@@ -525,6 +527,8 @@ To install Qdrant MCP Server for Claude Desktop automatically via [Smithery](htt
 ```bash
 npx @smithery/cli install mcp-server-qdrant --client claude
 ```
+
+> **⚠️ Note**: Smithery installs the **original unenhanced package** from PyPI (CPU-only, no GPU acceleration). For the enhanced version with 10x performance boost, use the [Docker installation method](#-docker-installation-recommended---gpu-accelerated) above.
 
 ### Manual configuration of Claude Desktop
 
