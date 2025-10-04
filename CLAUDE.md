@@ -191,7 +191,7 @@ The project uses `docker-compose.enhanced.yml` with:
 - **GPU Runtime**: NVIDIA runtime with device reservations for CUDA 12.x
 - **Host Networking**: Direct Qdrant connection on localhost:6333
 - **Volume Mounting**: Persistent logs in `./logs/`
-- **4.49GB Container**: Pre-loaded with embedding models and cuDNN 9.13.0
+- **16.5GB Container**: CUDA 12.x + cuDNN 9.13.0 + embedding models pre-loaded
 - **Performance**: 30% improvement in embedding generation (0.019s → 0.013s)
 
 ## Key Files & Their Roles
@@ -267,7 +267,7 @@ The server supports multiple MCP clients through dual transport (stdio/sse) and 
 ## Performance & Production Considerations
 
 - **GPU Acceleration**: Requires NVIDIA CUDA 12.x runtime for optimal performance
-- **Model Loading**: 4.49GB container includes pre-loaded embedding models
+- **Model Loading**: 16.5GB container includes CUDA runtime + cuDNN + pre-loaded embedding models
 - **Collection Auto-Creation**: Collections are created with optimal HNSW and quantization settings
 - **Caching Strategy**: Sub-100ms storage with intelligent model reuse
 - **Production Scale**: Validated with 48 active collections in production environments
