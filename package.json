@@ -1,7 +1,7 @@
 {
   "name": "@triepod-ai/mcp-server-qdrant-enhanced",
   "version": "0.7.1",
-  "description": "Enhanced MCP server for Qdrant with GPU acceleration, multi-vector support, and production infrastructure. NOTE: This is a Python package distributed via PyPI, not npm. This package.json is for metadata only.",
+  "description": "Enhanced MCP server for Qdrant with GPU acceleration, multi-vector support, and production infrastructure. DISTRIBUTION: Docker-only (CUDA 12.x + cuDNN 9.13.0 + models = 16.5GB). This package.json is for metadata only.",
   "keywords": [
     "mcp",
     "model-context-protocol",
@@ -70,26 +70,27 @@
   },
   "publishConfig": {
     "access": "public",
-    "note": "This package is distributed via PyPI (pip install mcp-server-qdrant), not npm"
+    "note": "NOT PUBLISHED TO NPM. This enhanced version is distributed via Docker only. PyPI package 'mcp-server-qdrant' is the original unenhanced version."
   },
   "enhanced-features": {
-    "gpu-acceleration": true,
+    "gpu-acceleration": "CUDA 12.x + cuDNN 9.13.0",
     "multi-vector-support": "384D, 768D, 1024D",
     "embedding-models": [
       "BAAI/bge-large-en-v1.5",
-      "BAAI/bge-base-en-v1.5", 
+      "BAAI/bge-base-en-v1.5",
       "BAAI/bge-base-en",
       "sentence-transformers/all-MiniLM-L6-v2"
     ],
     "production-ready": true,
-    "container-size": "4.49GB",
+    "container-size": "16.5GB (includes CUDA runtime, cuDNN, and pre-downloaded models)",
     "collections-supported": 48,
-    "quantization-enabled": true
+    "quantization-enabled": true,
+    "performance-improvement": "10x faster embedding generation (13ms vs 130ms CPU)"
   },
   "installation-methods": {
-    "pip": "pip install mcp-server-qdrant",
-    "uvx": "uvx mcp-server-qdrant",
-    "docker": "docker pull ghcr.io/triepod-ai/mcp-server-qdrant-enhanced",
-    "setup-script": "curl -sSL https://raw.githubusercontent.com/triepod-ai/mcp-server-qdrant-enhanced/main/setup-qdrant-enhanced.sh | bash"
-  }
+    "docker-gpu": "docker pull ghcr.io/triepod-ai/mcp-server-qdrant-enhanced (GPU-accelerated, 16.5GB)",
+    "docker-compose": "curl -sSL https://raw.githubusercontent.com/triepod-ai/mcp-server-qdrant-enhanced/main/docker-compose.enhanced.yml | docker-compose -f - up -d",
+    "development-cpu": "git clone + uv pip install -e . (CPU-only, 10x slower)"
+  },
+  "distribution-note": "GPU acceleration requires Docker. PyPI package 'mcp-server-qdrant' is the original unenhanced version."
 }

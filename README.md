@@ -1,9 +1,9 @@
 # Enhanced Qdrant MCP Server
 
-[![PyPI Package](https://img.shields.io/pypi/v/mcp-server-qdrant)](https://pypi.org/project/mcp-server-qdrant/)
-[![Docker Image](https://img.shields.io/docker/v/triepod-ai/mcp-server-qdrant-enhanced?label=docker)](https://github.com/triepod-ai/mcp-server-qdrant-enhanced/pkgs/container/mcp-server-qdrant-enhanced)
+[![Docker Image](https://img.shields.io/badge/docker-ghcr.io-blue)](https://github.com/triepod-ai/mcp-server-qdrant-enhanced/pkgs/container/mcp-server-qdrant-enhanced)
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
 [![GitHub Actions](https://github.com/triepod-ai/mcp-server-qdrant-enhanced/workflows/Build%20and%20Publish/badge.svg)](https://github.com/triepod-ai/mcp-server-qdrant-enhanced/actions)
+[![CUDA 12.x](https://img.shields.io/badge/CUDA-12.x-green.svg)](https://developer.nvidia.com/cuda-downloads)
 
 > **🚀 Production-Ready Enhancement** of the original [mcp-server-qdrant](https://github.com/qdrant/mcp-server-qdrant) with GPU acceleration, multi-vector support, and enterprise-grade deployment infrastructure.
 
@@ -13,11 +13,11 @@
 
 This fork transforms the basic MCP server into a **production-ready solution** with:
 
-- **🚀 10x Performance**: GPU acceleration with FastEmbed and CUDA support
+- **🚀 10x Performance**: GPU acceleration with FastEmbed and CUDA 12.x support
 - **🧠 Smart Model Selection**: Automatic 384D/768D/1024D embedding selection based on collection type
-- **🐳 Production Infrastructure**: Complete Docker automation with 4.49GB optimized containers
-- **📦 Flexible Installation**: PyPI package + Docker options for maximum accessibility
-- **⚡ Zero-Config Setup**: Interactive installer with platform detection
+- **🐳 Production Infrastructure**: Complete Docker automation with pre-configured CUDA environment
+- **📦 Docker-First Distribution**: GPU acceleration requires Docker (CUDA + cuDNN + models = 16.5GB)
+- **⚡ Zero-Config GPU Setup**: All dependencies pre-installed in container
 - **🔄 48 Production Collections**: Battle-tested with real workloads
 
 ## MCP SDK Version
@@ -72,85 +72,92 @@ An enhanced Model Context Protocol server for keeping and retrieving memories in
 
 ## 🚀 Quick Start
 
-Get up and running with the Enhanced Qdrant MCP Server in under 2 minutes! Choose your preferred installation method:
+**⚠️ GPU Acceleration Requires Docker**: This enhanced version's 10x performance boost comes from GPU acceleration with CUDA 12.x and cuDNN 9.13.0. These dependencies (16.5GB) are pre-installed in the Docker image. Manual installation of CUDA/cuDNN is complex and error-prone.
 
-### 🎯 One-Command Setup (Recommended)
+### 🐳 Docker Installation (Recommended - GPU-Accelerated)
 
-The easiest way to get started - interactive setup that guides you through the entire process:
-
-```bash
-curl -sSL https://raw.githubusercontent.com/triepod-ai/mcp-server-qdrant-enhanced/main/setup-qdrant-enhanced.sh | bash
-```
-
-This script will:
-- ✅ Detect your platform and requirements
-- ✅ Let you choose between Python/PyPI or Docker installation
-- ✅ Configure Qdrant connection settings
-- ✅ Generate MCP client configurations (Claude Desktop, VS Code)
-- ✅ Test your setup and validate connectivity
-
-### 📦 Option 1: Python Package via PyPI (Development)
-
-Perfect for developers who want direct command access and easy integration:
+The only practical way to get full GPU acceleration:
 
 ```bash
-# Install using pip
-pip install mcp-server-qdrant
-
-# Or install using uvx (recommended for MCP tools)
-uvx mcp-server-qdrant
-
-# Verify installation
-mcp-server-qdrant --help
-
-# Quick test (requires running Qdrant instance)
-QDRANT_URL="http://localhost:6333" COLLECTION_NAME="test" mcp-server-qdrant --transport stdio
-```
-
-**Requirements:** Python 3.10+, MCP SDK v1.15.0+, running Qdrant instance, optional CUDA 12.x for GPU acceleration
-
-### 🐳 Option 2: Docker Container (Production)
-
-Complete isolation with all dependencies and models pre-installed:
-
-```bash
-# Pull the pre-built image (4.49GB with embedded models)
+# Pull the pre-built image (16.5GB with CUDA, cuDNN, and embedding models)
 docker pull ghcr.io/triepod-ai/mcp-server-qdrant-enhanced:latest
 
-# Quick run with host networking
-docker run -it --rm --network host \
+# Run with GPU support (requires NVIDIA Docker runtime)
+docker run -it --rm \
+  --gpus all \
+  --network host \
   -e QDRANT_URL="http://localhost:6333" \
   -e COLLECTION_NAME="enhanced-collection" \
+  -e FASTEMBED_CUDA="true" \
   ghcr.io/triepod-ai/mcp-server-qdrant-enhanced:latest
 
 # Or use Docker Compose for persistent setup
-curl -sSL https://raw.githubusercontent.com/triepod-ai/mcp-server-qdrant-enhanced/main/docker-compose.yml -o docker-compose.yml
-docker-compose up -d
+curl -sSL https://raw.githubusercontent.com/triepod-ai/mcp-server-qdrant-enhanced/main/docker-compose.enhanced.yml -o docker-compose.yml
+docker-compose -f docker-compose.enhanced.yml up -d
 ```
 
-**Requirements:** Docker with NVIDIA runtime (for GPU), running Qdrant instance, CUDA 12.x with cuDNN 9.13.0 for optimal performance
+**Requirements:**
+- Docker with NVIDIA runtime (for GPU acceleration)
+- NVIDIA GPU with CUDA 12.x support
+- Running Qdrant instance (localhost:6333)
+- 16.5GB disk space for image
 
-### ⚡ What You Get
+**What you get:**
+- ✅ CUDA 12.x runtime pre-configured
+- ✅ cuDNN 9.13.0 libraries installed
+- ✅ All embedding models pre-downloaded
+- ✅ 10x faster embedding generation (13ms vs 130ms CPU)
+- ✅ Zero configuration required
 
-After installation, you'll have access to:
+### 🔧 Development Setup (CPU-Only, Without GPU)
 
-- **🎯 Enhanced MCP Tools**: `qdrant-store`, `qdrant-find`, `qdrant-list-collections`, etc.
-- **🧠 Smart Model Selection**: Automatic 384D/768D/1024D model selection based on collection type
-- **🚀 GPU Acceleration**: FastEmbed with CUDA support for lightning-fast embeddings
-- **📊 Production Collections**: 48 pre-configured collection types with optimal model mappings
-- **🔄 Zero-Config Operation**: Works out of the box with sensible defaults
+For developers who want to modify code but **won't get GPU acceleration**:
 
-### 🔧 Quick Integration
+```bash
+# Clone and setup with uv package manager
+git clone https://github.com/triepod-ai/mcp-server-qdrant-enhanced.git
+cd mcp-server-qdrant-enhanced
 
-Add to your MCP client configuration:
+# Install dependencies
+uv pip install -e .
 
-**Claude Desktop** (`claude_desktop_config.json`):
+# Run in CPU mode (much slower than Docker GPU version)
+QDRANT_URL="http://localhost:6333" COLLECTION_NAME="test" python -m mcp_server_qdrant.enhanced_main --transport stdio
+```
+
+**Note:** CPU mode is ~10x slower than GPU-accelerated Docker version. Use this only for development/testing code changes.
+
+### 🔧 Claude Desktop Integration
+
+Add to your Claude Desktop configuration (`claude_desktop_config.json`):
+
+**Using Docker (GPU-accelerated):**
 ```json
 {
   "mcpServers": {
     "qdrant-enhanced": {
+      "command": "docker",
+      "args": [
+        "run", "-i", "--rm",
+        "--gpus", "all",
+        "--network", "host",
+        "-e", "QDRANT_URL=http://localhost:6333",
+        "-e", "COLLECTION_NAME=your-collection",
+        "-e", "FASTEMBED_CUDA=true",
+        "ghcr.io/triepod-ai/mcp-server-qdrant-enhanced:latest"
+      ]
+    }
+  }
+}
+```
+
+**Using CPU mode (development only, 10x slower):**
+```json
+{
+  "mcpServers": {
+    "qdrant-dev": {
       "command": "uvx",
-      "args": ["mcp-server-qdrant", "--transport", "stdio"],
+      "args": ["mcp-server-qdrant"],
       "env": {
         "QDRANT_URL": "http://localhost:6333",
         "COLLECTION_NAME": "your-collection"
@@ -160,7 +167,7 @@ Add to your MCP client configuration:
 }
 ```
 
-**Need help?** The setup script generates these configurations automatically! 🎊
+**Note:** CPU mode uses the original unenhanced package from PyPI. For GPU acceleration and enhanced features, use Docker.
 
 ---
 
@@ -175,23 +182,29 @@ The Enhanced Qdrant MCP Server supports two transport modes for different use ca
 **Recommended For**: Development, Claude Desktop, local MCP clients
 
 ```bash
-# Using Python package via uvx (recommended)
-uvx mcp-server-qdrant --transport stdio
-
-# Using Docker with stdio (default)
+# Using Docker with GPU acceleration (recommended)
 docker-compose -f docker-compose.enhanced.yml up -d mcp-server-enhanced
+
+# Or run directly
+docker run -i --rm --gpus all --network host \
+  -e QDRANT_URL="http://localhost:6333" \
+  -e COLLECTION_NAME="your-collection" \
+  ghcr.io/triepod-ai/mcp-server-qdrant-enhanced:latest
 ```
 
 **Claude Desktop Configuration**:
 ```json
 {
   "qdrant-enhanced": {
-    "command": "uvx",
-    "args": ["mcp-server-qdrant", "--transport", "stdio"],
-    "env": {
-      "QDRANT_URL": "http://localhost:6333",
-      "COLLECTION_NAME": "your-collection"
-    }
+    "command": "docker",
+    "args": [
+      "run", "-i", "--rm",
+      "--gpus", "all",
+      "--network", "host",
+      "-e", "QDRANT_URL=http://localhost:6333",
+      "-e", "COLLECTION_NAME=your-collection",
+      "ghcr.io/triepod-ai/mcp-server-qdrant-enhanced:latest"
+    ]
   }
 }
 ```
@@ -443,15 +456,22 @@ Note: You cannot provide both `QDRANT_URL` and `QDRANT_LOCAL_PATH` at the same t
 
 ## Installation Options
 
-> **⚡ Quick Setup Available!** For the fastest installation experience, see the [Quick Start](#-quick-start) section above which includes Python/PyPI and Docker options with automated setup.
+### Why Docker is Required for GPU Acceleration
 
-### Enhanced Installation Methods
+The enhanced version's main value proposition is **10x performance from GPU acceleration**. This requires:
 
-This enhanced fork offers multiple installation paths optimized for different use cases:
+- **CUDA 12.x Runtime** (~5GB) - Complex installation, OS-specific
+- **cuDNN 9.13.0 Libraries** (~2GB) - Requires NVIDIA account, manual download
+- **Embedding Models** (~3-4GB) - Pre-downloaded for immediate use
+- **Proper LD_LIBRARY_PATH** - Environment configuration
+- **GPU Driver Compatibility** - Must match CUDA version
 
-1. **🎯 [Interactive Setup Script](#-one-command-setup-recommended)** - One command, fully guided setup
-2. **📦 [Python Package via PyPI](#-option-1-python-package-via-pypi-development)** - Perfect for development and easy integration
-3. **🐳 [Docker Container](#-option-2-docker-container-production)** - Production-ready with embedded models
+**Docker Pre-Packages Everything**: All dependencies, configurations, and models in one 16.5GB image that works out of the box.
+
+### Installation Methods
+
+1. **🐳 [Docker Container](#-docker-installation-recommended---gpu-accelerated)** - Primary method for GPU acceleration
+2. **🔧 [Development Setup](#-development-setup-cpu-only-without-gpu)** - For code modifications (CPU-only, 10x slower)
 
 ### Traditional Docker Compose Setup
 
@@ -881,15 +901,18 @@ mcp dev src/mcp_server_qdrant/enhanced_main.py
 #### Production Testing
 
 ```bash
-# Test PyPI package installation
-pip install mcp-server-qdrant
-mcp-server-qdrant --help
+# Test Docker container (GPU-accelerated enhanced version)
+docker run -it --rm --gpus all \
+  ghcr.io/triepod-ai/mcp-server-qdrant-enhanced:latest --help
 
-# Or test with uvx
+# Test with actual Qdrant connection
+docker run -it --rm --gpus all --network host \
+  -e QDRANT_URL="http://localhost:6333" \
+  -e COLLECTION_NAME="test" \
+  ghcr.io/triepod-ai/mcp-server-qdrant-enhanced:latest
+
+# CPU-only mode (original package, much slower)
 uvx mcp-server-qdrant --help
-
-# Test Docker container
-docker run -it --rm ghcr.io/triepod-ai/mcp-server-qdrant-enhanced:latest --help
 ```
 
 ## 🔒 Data Safety and Migration

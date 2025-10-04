@@ -176,31 +176,26 @@ jobs:
         run: |
           echo "## 🚀 Enhanced MCP Server Release ${{ steps.version.outputs.version }}" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "### 📦 Available Installation Methods:" >> $GITHUB_STEP_SUMMARY
+          echo "### 🐳 Docker Installation (GPU-Accelerated):" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "**PyPI Package:**" >> $GITHUB_STEP_SUMMARY
-          echo '```bash' >> $GITHUB_STEP_SUMMARY
-          echo "pip install mcp-server-qdrant" >> $GITHUB_STEP_SUMMARY
-          echo '```' >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "**Using uvx (recommended):**" >> $GITHUB_STEP_SUMMARY
-          echo '```bash' >> $GITHUB_STEP_SUMMARY
-          echo "uvx mcp-server-qdrant" >> $GITHUB_STEP_SUMMARY
-          echo '```' >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "**Docker Image:**" >> $GITHUB_STEP_SUMMARY
+          echo "**Pull the enhanced image:**" >> $GITHUB_STEP_SUMMARY
           echo '```bash' >> $GITHUB_STEP_SUMMARY
           echo "docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.version.outputs.version }}" >> $GITHUB_STEP_SUMMARY
           echo '```' >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "**Setup Script:**" >> $GITHUB_STEP_SUMMARY
+          echo "**Run with GPU acceleration:**" >> $GITHUB_STEP_SUMMARY
           echo '```bash' >> $GITHUB_STEP_SUMMARY
-          echo "curl -sSL https://raw.githubusercontent.com/triepod-ai/mcp-server-qdrant-enhanced/main/setup-qdrant-enhanced.sh | bash" >> $GITHUB_STEP_SUMMARY
+          echo "docker run -i --rm --gpus all --network host \\" >> $GITHUB_STEP_SUMMARY
+          echo "  -e QDRANT_URL=http://localhost:6333 \\" >> $GITHUB_STEP_SUMMARY
+          echo "  -e COLLECTION_NAME=your-collection \\" >> $GITHUB_STEP_SUMMARY
+          echo "  ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.version.outputs.version }}" >> $GITHUB_STEP_SUMMARY
           echo '```' >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "### ✨ Enhanced Features:" >> $GITHUB_STEP_SUMMARY
-          echo "- 🎯 GPU Acceleration with FastEmbed" >> $GITHUB_STEP_SUMMARY
-          echo "- 🔄 Multi-Vector Support (384D/768D/1024D)" >> $GITHUB_STEP_SUMMARY
-          echo "- 📊 48 Production Collections" >> $GITHUB_STEP_SUMMARY
-          echo "- ⚡ Quantization Enabled" >> $GITHUB_STEP_SUMMARY
-          echo "- 🐳 4.49GB Production Container" >> $GITHUB_STEP_SUMMARY
+          echo "- 🚀 10x Performance: GPU acceleration with CUDA 12.x + cuDNN 9.13.0" >> $GITHUB_STEP_SUMMARY
+          echo "- 🧠 Multi-Vector Support: 384D/768D/1024D embeddings" >> $GITHUB_STEP_SUMMARY
+          echo "- 📊 48 Production Collections with optimized model selection" >> $GITHUB_STEP_SUMMARY
+          echo "- ⚡ Zero-Config GPU Setup: All dependencies pre-installed" >> $GITHUB_STEP_SUMMARY
+          echo "- 🐳 16.5GB Container: CUDA runtime + cuDNN + embedding models" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "⚠️ **Note:** GPU acceleration requires Docker. This is the only distribution method for the enhanced version." >> $GITHUB_STEP_SUMMARY
