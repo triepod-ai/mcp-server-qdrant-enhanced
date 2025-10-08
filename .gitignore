@@ -385,3 +385,6 @@ local-config/
 dev-config/
 override/
 @todo.md
+
+# Resume/CV performance claims (private reference)
+docs/ACCURATE_PERFORMANCE_CLAIMS.md
