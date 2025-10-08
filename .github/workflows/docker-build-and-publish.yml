@@ -192,7 +192,7 @@ jobs:
           echo '```' >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "### ✨ Enhanced Features:" >> $GITHUB_STEP_SUMMARY
-          echo "- 🚀 10x Performance: GPU acceleration with CUDA 12.x + cuDNN 9.13.0" >> $GITHUB_STEP_SUMMARY
+          echo "- 🚀 30% Performance Improvement: GPU acceleration with CUDA 12.x + cuDNN 9.13.0" >> $GITHUB_STEP_SUMMARY
           echo "- 🧠 Multi-Vector Support: 384D/768D/1024D embeddings" >> $GITHUB_STEP_SUMMARY
           echo "- 📊 48 Production Collections with optimized model selection" >> $GITHUB_STEP_SUMMARY
           echo "- ⚡ Zero-Config GPU Setup: All dependencies pre-installed" >> $GITHUB_STEP_SUMMARY
