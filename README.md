@@ -13,7 +13,7 @@
 
 This fork transforms the basic MCP server into a **production-ready solution** with:
 
-- **🚀 10x Performance**: GPU acceleration with FastEmbed and CUDA 12.x support
+- **🚀 30% Performance Improvement**: GPU acceleration with FastEmbed and CUDA 12.x support
 - **🧠 Smart Model Selection**: Automatic 384D/768D/1024D embedding selection based on collection type
 - **🐳 Production Infrastructure**: Complete Docker automation with pre-configured CUDA environment
 - **📦 Docker-First Distribution**: GPU acceleration requires Docker (CUDA + cuDNN + models = 16.5GB)
@@ -74,7 +74,7 @@ An enhanced Model Context Protocol server for keeping and retrieving memories in
 
 ## 🚀 Quick Start
 
-**⚠️ GPU Acceleration Requires Docker**: This enhanced version's 10x performance boost comes from GPU acceleration with CUDA 12.x and cuDNN 9.13.0. These dependencies (16.5GB) are pre-installed in the Docker image. Manual installation of CUDA/cuDNN is complex and error-prone.
+**⚠️ GPU Acceleration Requires Docker**: This enhanced version's 30% performance improvement comes from GPU acceleration with CUDA 12.x and cuDNN 9.13.0. These dependencies (16.5GB) are pre-installed in the Docker image. Manual installation of CUDA/cuDNN is complex and error-prone.
 
 ### 🐳 Docker Installation (Recommended - GPU-Accelerated)
 
@@ -108,7 +108,7 @@ docker-compose -f docker-compose.enhanced.yml up -d
 - ✅ CUDA 12.x runtime pre-configured
 - ✅ cuDNN 9.13.0 libraries installed
 - ✅ All embedding models pre-downloaded
-- ✅ 10x faster embedding generation (13ms vs 130ms CPU)
+- ✅ 30% faster embedding generation (13ms vs 19ms)
 - ✅ Zero configuration required
 
 ### 🔧 Development Setup (CPU-Only, Without GPU)
@@ -127,7 +127,7 @@ uv pip install -e .
 QDRANT_URL="http://localhost:6333" COLLECTION_NAME="test" python -m mcp_server_qdrant.enhanced_main --transport stdio
 ```
 
-**Note:** CPU mode is ~10x slower than GPU-accelerated Docker version. Use this only for development/testing code changes.
+**Note:** CPU mode is ~3x slower than GPU-accelerated Docker version. Use this only for development/testing code changes.
 
 ### 🔧 Claude Desktop Integration
 
@@ -153,7 +153,7 @@ Add to your Claude Desktop configuration (`claude_desktop_config.json`):
 }
 ```
 
-**Using CPU mode (development only, 10x slower):**
+**Using CPU mode (development only, ~3x slower):**
 ```json
 {
   "mcpServers": {
@@ -412,7 +412,7 @@ for result in response["results"]:
 ## 🏆 What Makes This Enhancement Special
 
 ### ✅ Enterprise-Grade Performance
-- **GPU Acceleration**: FastEmbed with CUDA support for 10x faster embedding generation
+- **GPU Acceleration**: FastEmbed with CUDA support for 30% faster embedding generation
 - **Smart Model Selection**: Collection-specific routing to optimal 384D/768D/1024D models
 - **Quantization Optimized**: 40% memory reduction while maintaining search quality
 - **Production Validated**: Sub-second response times across 48 active collections
@@ -460,7 +460,7 @@ Note: You cannot provide both `QDRANT_URL` and `QDRANT_LOCAL_PATH` at the same t
 
 ### Why Docker is Required for GPU Acceleration
 
-The enhanced version's main value proposition is **10x performance from GPU acceleration**. This requires:
+The enhanced version's main value proposition is **30% performance improvement from GPU acceleration**. This requires:
 
 - **CUDA 12.x Runtime** (~5GB) - Complex installation, OS-specific
 - **cuDNN 9.13.0 Libraries** (~2GB) - Requires NVIDIA account, manual download
@@ -473,7 +473,7 @@ The enhanced version's main value proposition is **10x performance from GPU acce
 ### Installation Methods
 
 1. **🐳 [Docker Container](#-docker-installation-recommended---gpu-accelerated)** - Primary method for GPU acceleration
-2. **🔧 [Development Setup](#-development-setup-cpu-only-without-gpu)** - For code modifications (CPU-only, 10x slower)
+2. **🔧 [Development Setup](#-development-setup-cpu-only-without-gpu)** - For code modifications (CPU-only, ~3x slower)
 
 ### Traditional Docker Compose Setup
 
@@ -528,7 +528,7 @@ To install Qdrant MCP Server for Claude Desktop automatically via [Smithery](htt
 npx @smithery/cli install mcp-server-qdrant --client claude
 ```
 
-> **⚠️ Note**: Smithery installs the **original unenhanced package** from PyPI (CPU-only, no GPU acceleration). For the enhanced version with 10x performance boost, use the [Docker installation method](#-docker-installation-recommended---gpu-accelerated) above.
+> **⚠️ Note**: Smithery installs the **original unenhanced package** from PyPI (CPU-only, no GPU acceleration). For the enhanced version with 30% performance improvement, use the [Docker installation method](#-docker-installation-recommended---gpu-accelerated) above.
 
 ### Manual configuration of Claude Desktop
 

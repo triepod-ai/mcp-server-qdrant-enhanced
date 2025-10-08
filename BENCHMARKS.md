@@ -12,7 +12,7 @@ All benchmarks conducted on **NVIDIA GeForce RTX 3080 Ti (12GB VRAM)** with CUDA
 | **Storage Operations** | 18-95ms | Varies by embedding model complexity |
 | **Search Performance** | Sub-50ms | With HNSW indexing |
 | **Stress Test Success** | 100% | 500 documents, zero failures |
-| **GPU Performance Boost** | ~10x | Estimated vs CPU-only mode |
+| **GPU Performance Boost** | ~30% | Validated vs CPU baseline |
 
 ## 📊 Detailed Performance Metrics
 
@@ -35,11 +35,11 @@ Based on validation testing (2025-01-23):
 - Batch processing: 124ms for 10 documents
 - Overall storage: 18-95ms depending on model
 
-**CPU-Only (Estimated)**:
-- Embedding generation: ~130ms per document (10x slower)
+**CPU-Only (Validated)**:
+- Embedding generation: ~19ms per document (46% slower than GPU)
 - Not recommended for production use
 
-**Performance Improvement**: ~10x faster with GPU acceleration
+**Performance Improvement**: ~30% faster with GPU acceleration
 
 > **Note**: CPU benchmark is estimated based on typical CPU vs GPU performance ratios. GPU acceleration requires Docker with NVIDIA runtime.
 

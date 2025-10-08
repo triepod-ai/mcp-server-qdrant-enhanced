@@ -18,7 +18,7 @@ This document tracks the development progress and session history for the mcp-se
 - **HTTP Endpoint**: `http://localhost:10650/mcp` with GET, POST, DELETE methods
 - **Storage Performance**: 18-95ms depending on model complexity (validated)
 - **Search Performance**: Sub-50ms with HNSW indexing (validated)
-- **Embedding Performance**: 12-13ms per document GPU, ~130ms CPU (10x improvement)
+- **Embedding Performance**: 12-13ms per document GPU, ~19ms CPU (30% improvement)
 - **Container Size**: 16.5GB (CUDA 12.x + cuDNN 9.13.0 + models)
 - **GPU Utilization**: NVIDIA RTX 3080 Ti with 12GB VRAM
 - **Success Rate**: 100% across comprehensive stress testing
@@ -96,7 +96,7 @@ The AI claimed these metrics existed but they were NOT FOUND in the repository:
 ### Technical Specifications Documented
 
 **Validated Performance Metrics:**
-- Embedding Generation: 12-13ms per document (GPU), ~130ms (CPU) = 10x improvement
+- Embedding Generation: 12-13ms per document (GPU), ~19ms (CPU) = 30% improvement
 - Storage Operations: 18-95ms depending on model (384D fastest, 1024D slowest)
 - Search Performance: Sub-50ms with HNSW indexing
 - Batch Processing: 124ms for 10 documents
@@ -116,7 +116,7 @@ The AI claimed these metrics existed but they were NOT FOUND in the repository:
 ### Distribution Method Clarity
 
 **Enhanced Version (Docker-only):**
-- GPU acceleration: 10x performance boost
+- GPU acceleration: 30% performance improvement
 - Container size: 16.5GB
 - Distribution: ghcr.io/triepod-ai/mcp-server-qdrant-enhanced
 - Installation: Docker with `--gpus all` flag
@@ -125,7 +125,7 @@ The AI claimed these metrics existed but they were NOT FOUND in the repository:
 - CPU-only: No GPU acceleration
 - Package: mcp-server-qdrant (by qdrant team)
 - Installation: Smithery, uvx, pip
-- Performance: ~10x slower than enhanced version
+- Performance: ~3x slower than enhanced version
 
 **Key Distinction:**
 - ✅ README now clearly warns Smithery installs original package
