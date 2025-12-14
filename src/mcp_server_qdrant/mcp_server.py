@@ -7,6 +7,7 @@ from datetime import datetime
 from typing import Any, List, Dict, Annotated
 from pydantic import Field
 from mcp.server.fastmcp import Context, FastMCP
+from mcp.types import ToolAnnotations
 from mcp_server_qdrant.enhanced_qdrant import Entry, Metadata, EnhancedQdrantConnector
 from mcp_server_qdrant.enhanced_settings import (
     EnhancedEmbeddingProviderSettings,
@@ -320,27 +321,63 @@ class QdrantMCPServer(FastMCP):
                 
             return result
 
-        # Register tools with enhanced descriptions
+        # Register tools with enhanced descriptions and annotations
         self.tool(
-            description="Store information in Qdrant with automatic collection-specific embedding model selection."
+            description="Store information in Qdrant with automatic collection-specific embedding model selection.",
+            annotations=ToolAnnotations(
+                readOnlyHint=False,      # Modifies database
+                destructiveHint=False,   # Creates, doesn't destroy
+                idempotentHint=True,     # Same content → same embedding
+                openWorldHint=False      # Local Qdrant instance
+            )
         )(qdrant_store)
         
         self.tool(
-            description="Store multiple documents efficiently in Qdrant with collection-specific embedding models and batch processing."
+            description="Store multiple documents efficiently in Qdrant with collection-specific embedding models and batch processing.",
+            annotations=ToolAnnotations(
+                readOnlyHint=False,      # Modifies database
+                destructiveHint=False,   # Creates, doesn't destroy
+                idempotentHint=True,     # Same documents → same embeddings
+                openWorldHint=False      # Local Qdrant instance
+            )
         )(qdrant_bulk_store)
         
         self.tool(
-            description="Search for information in Qdrant using collection-specific embedding model with structured results."
+            description="Search for information in Qdrant using collection-specific embedding model with structured results.",
+            annotations=ToolAnnotations(
+                readOnlyHint=True,       # Only reads data
+                destructiveHint=False,   # No modifications
+                idempotentHint=True,     # Same query → same results
+                openWorldHint=False      # Local Qdrant instance
+            )
         )(qdrant_find)
         
         self.tool(
-            description="List all Qdrant collections with their configurations and model information."
+            description="List all Qdrant collections with their configurations and model information.",
+            annotations=ToolAnnotations(
+                readOnlyHint=True,       # Only reads metadata
+                destructiveHint=False,   # No modifications
+                idempotentHint=True,     # Consistent listing
+                openWorldHint=False      # Local Qdrant instance
+            )
         )(qdrant_list_collections)
         
         self.tool(
-            description="Get detailed information about a specific Qdrant collection."
+            description="Get detailed information about a specific Qdrant collection.",
+            annotations=ToolAnnotations(
+                readOnlyHint=True,       # Only reads metadata
+                destructiveHint=False,   # No modifications
+                idempotentHint=True,     # Consistent info
+                openWorldHint=False      # Local Qdrant instance
+            )
         )(qdrant_collection_info)
         
         self.tool(
-            description="Show current collection-to-model mappings and available configurations."
+            description="Show current collection-to-model mappings and available configurations.",
+            annotations=ToolAnnotations(
+                readOnlyHint=True,       # Only reads config
+                destructiveHint=False,   # No modifications
+                idempotentHint=True,     # Static configuration
+                openWorldHint=False      # In-memory config
+            )
         )(qdrant_model_mappings)

@@ -225,11 +225,27 @@ The project uses `docker-compose.enhanced.yml` with:
 - **Enhanced Stability**: Improved connection handling and reduced latency
 - **Backward Compatibility**: Maintains compatibility with existing MCP clients
 
-### GPU Acceleration Enhancements
+### GPU Acceleration Enhancements (2025-11-02)
 - **cuDNN 9.13.0**: Successfully installed cuDNN libraries for CUDA 12.x compatibility
 - **Performance**: 30% improvement in embedding generation (0.019s → 0.013s)
 - **ONNX Runtime**: GPU providers (CUDA, TensorRT) fully functional
 - **Stress Testing**: 100% success rate with 500 documents, 18ms average storage time
+
+#### GPU Troubleshooting Guide
+**CUBLAS_STATUS_NOT_INITIALIZED Error Fix:**
+- **Problem**: `[ONNXRuntimeError] : 1 : FAIL : CUBLAS failure 1: CUBLAS_STATUS_NOT_INITIALIZED`
+- **Root Cause**: Using `nvidia/cuda:12.x-runtime-ubuntu22.04` base image (missing cuBLAS dev libraries)
+- **Solution**: Switch to `nvidia/cuda:12.x-devel-ubuntu22.04` base image
+- **Files**: `Dockerfile.enhanced.cuda`, `Dockerfile.enhanced.http`
+
+**CUDA Provider Not Available Fix:**
+- **Problem**: `CUDAExecutionProvider` not in available providers list
+- **Root Cause**: Stable PyPI `onnxruntime-gpu` doesn't support CUDA 12.x despite documentation claims
+- **Solution**: Install onnxruntime-gpu from nightly builds:
+  ```bash
+  pip install --pre --index-url https://aiinfra.pkgs.visualstudio.com/PublicPackages/_packaging/ORT-Nightly/pypi/simple/ onnxruntime-gpu
+  ```
+- **Verification**: `ort.get_available_providers()` should return `['TensorrtExecutionProvider', 'CUDAExecutionProvider', 'CPUExecutionProvider']`
 
 ### Validation Results
 - **GPU Detection**: NVIDIA GeForce RTX 3080 Ti with 12GB VRAM confirmed working
@@ -258,11 +274,125 @@ async def qdrant_store(ctx: Context, information: str, collection_name: str, met
     await self.qdrant_connector.store(entry, collection_name=collection_name)
 ```
 
+### Tool Annotations (Added: 2025-12-14)
+
+All 6 MCP tools now include comprehensive `ToolAnnotations` to help MCP clients (like Claude) better understand tool behavior and optimize usage patterns.
+
+**Annotation Structure** (from MCP spec):
+- `readOnlyHint`: Tool only reads data, doesn't modify state
+- `destructiveHint`: Tool may perform irreversible changes
+- `idempotentHint`: Repeated calls with same args produce same result
+- `openWorldHint`: Tool interacts with external systems vs internal-only operations
+- `title`: Human-readable display name
+
+**Tool Annotation Summary**:
+
+| Tool | readOnly | destructive | idempotent | openWorld | Rationale |
+|------|----------|-------------|------------|-----------|-----------|
+| `qdrant_store` | ❌ | ❌ | ✅ | ❌ | Creates vectors, same content → same embedding, local DB |
+| `qdrant_bulk_store` | ❌ | ❌ | ✅ | ❌ | Batch creates, deterministic embeddings, local DB |
+| `qdrant_find` | ✅ | ❌ | ✅ | ❌ | Read-only search, cacheable results, local DB |
+| `qdrant_list_collections` | ✅ | ❌ | ✅ | ❌ | Metadata listing, no modifications, local DB |
+| `qdrant_collection_info` | ✅ | ❌ | ✅ | ❌ | Collection inspection, no changes, local DB |
+| `qdrant_model_mappings` | ✅ | ❌ | ✅ | ❌ | Static config display, in-memory data |
+
+**Implementation Pattern**:
+```python
+from mcp.types import ToolAnnotations
+
+self.tool(
+    description="Store information in Qdrant...",
+    annotations=ToolAnnotations(
+        readOnlyHint=False,      # Modifies database
+        destructiveHint=False,   # Creates, doesn't destroy
+        idempotentHint=True,     # Same content → same embedding
+        openWorldHint=False      # Local Qdrant instance
+    )
+)(qdrant_store)
+```
+
+**Benefits**:
+- **Better UX**: MCP clients can optimize tool usage based on behavior hints
+- **Caching**: Read-only + idempotent tools can be safely cached
+- **Retry Logic**: Idempotent operations can be automatically retried on failure
+- **UI Presentation**: Clients can show appropriate warnings for destructive operations
+
+**Security Note**: Per MCP spec, annotations are hints only and should not be used for security-critical decisions. Always obtain explicit user consent before tool invocation.
+
 ### Client Configuration
 The server supports multiple MCP clients through dual transport (stdio/sse) and provides template configurations for:
 - Claude Desktop (`claude_desktop_config.json`)
-- VS Code (`cline_mcp_settings.json`)  
+- VS Code (`cline_mcp_settings.json`)
 - Cursor/Windsurf (SSE transport)
+
+### MCP HTTP Protocol Requirements (2025-11-02)
+
+Critical protocol requirements discovered during local testing validation:
+
+#### HTTP Headers
+```bash
+# REQUIRED: Both content types must be in Accept header
+Accept: application/json, text/event-stream
+
+# REQUIRED: Session ID header (not X-Session-Id)
+mcp-session-id: <session-id-from-initialize>
+```
+
+#### Session Initialization Sequence
+```bash
+# 1. Initialize session (creates new session ID)
+POST /mcp
+Headers: Accept: application/json, text/event-stream
+Body: {"jsonrpc": "2.0", "id": 1, "method": "initialize", "params": {...}}
+Response: Returns session ID in response
+
+# 2. Send initialized notification (REQUIRED before tool calls)
+POST /mcp
+Headers:
+  Accept: application/json, text/event-stream
+  mcp-session-id: <session-id>
+Body: {"jsonrpc": "2.0", "method": "notifications/initialized"}
+
+# 3. Now tool calls will work
+POST /mcp
+Headers:
+  Accept: application/json, text/event-stream
+  mcp-session-id: <session-id>
+Body: {"jsonrpc": "2.0", "id": 2, "method": "tools/list"}
+```
+
+#### Common Errors
+- **406 Not Acceptable**: Missing `text/event-stream` in Accept header
+- **400 Bad Request "Missing session ID"**: Missing or incorrect `mcp-session-id` header
+- **-32602 "Invalid request parameters"**: Tool called before `notifications/initialized` sent
+
+#### Testing Pattern
+```bash
+# Local server testing outside container
+source .venv/bin/activate
+uvicorn mcp_server_qdrant.enhanced_http_app:app --host 127.0.0.1 --port 10651
+
+# Test session flow
+curl -X POST http://127.0.0.1:10651/mcp \
+  -H "Content-Type: application/json" \
+  -H "Accept: application/json, text/event-stream" \
+  -d '{"jsonrpc": "2.0", "id": 1, "method": "initialize", "params": {"protocolVersion": "2024-11-05", "capabilities": {}, "clientInfo": {"name": "test-client", "version": "1.0"}}}'
+```
+
+#### Known Issues vs Working Features
+**Working ✅**:
+- MCP HTTP protocol implementation
+- Session management with `mcp-session-id` header
+- All 6 MCP tools (store, bulk_store, find, list_collections, collection_info, model_mappings)
+- Local server testing (port 10651)
+- GPU acceleration (30% improvement in embeddings)
+- Collection auto-creation with model selection
+
+**Known Issue 🔧**:
+- Container HTTP timeout on port 10650 (transport/networking layer issue, NOT core MCP functionality)
+- Core MCP server works perfectly - issue is container-specific networking/resource constraints
+- Direct Python API calls work fine in container
+- Local server (outside container) works perfectly with same code
 
 ## Performance & Production Considerations
 
@@ -277,11 +407,55 @@ The server supports multiple MCP clients through dual transport (stdio/sse) and 
 Run tests frequently during development:
 ```bash
 make ci-test           # Complete CI-style validation
-./dev quick-test       # Fast MCP functionality validation  
+./dev quick-test       # Fast MCP functionality validation
 pytest tests/test_settings.py -v  # Specific test file
 ```
 
 The test suite covers enhanced settings, Qdrant integration, FastEmbed embedding, and validators with both unit and integration test patterns.
+
+### Local MCP Server Testing (2025-11-02)
+
+For testing MCP HTTP transport outside Docker containers:
+
+```bash
+# 1. Start local server on alternate port
+source .venv/bin/activate
+uvicorn mcp_server_qdrant.enhanced_http_app:app --host 127.0.0.1 --port 10651 > /tmp/mcp_local_test.log 2>&1 &
+
+# 2. Test session initialization
+curl -X POST http://127.0.0.1:10651/mcp \
+  -H "Content-Type: application/json" \
+  -H "Accept: application/json, text/event-stream" \
+  -d '{"jsonrpc": "2.0", "id": 1, "method": "initialize", "params": {"protocolVersion": "2024-11-05", "capabilities": {}, "clientInfo": {"name": "test-client", "version": "1.0"}}}'
+
+# 3. Extract session ID from response, send initialized notification
+curl -X POST http://127.0.0.1:10651/mcp \
+  -H "Content-Type: application/json" \
+  -H "Accept: application/json, text/event-stream" \
+  -H "mcp-session-id: <session-id>" \
+  -d '{"jsonrpc": "2.0", "method": "notifications/initialized"}'
+
+# 4. Test tool calls (list, store, find)
+curl -X POST http://127.0.0.1:10651/mcp \
+  -H "Content-Type: application/json" \
+  -H "Accept: application/json, text/event-stream" \
+  -H "mcp-session-id: <session-id>" \
+  -d '{"jsonrpc": "2.0", "id": 2, "method": "tools/list"}'
+```
+
+**Validation Results (2025-11-02)**:
+- ✅ Session initialization working (HTTP 200 OK)
+- ✅ All 6 MCP tools returned from tools/list
+- ✅ qdrant_store tool call successful (stored document with 384D embeddings)
+- ✅ qdrant_find tool call successful (retrieved with score 0.57)
+- ✅ Collection auto-creation working (local_test collection)
+- ✅ Model selection working (all-minilm-l6-v2 for technical content)
+
+**Local Environment Notes**:
+- Python 3.11.2 with virtual environment (.venv)
+- ONNX Runtime 1.21.0 (CPU-only on host, no GPU support in venv)
+- NVIDIA RTX 3080 Ti detected but CUDA providers not available in local venv
+- For GPU testing, use Docker containers with CUDA runtime
 
 ## Documentation Guidelines
 
