@@ -9,7 +9,6 @@ def create_embedding_provider(settings: EmbeddingProviderSettings) -> EmbeddingP
     :param settings: The settings for the embedding provider.
     :return: An instance of the specified embedding provider.
     """
-    import sys
     #     print(f"[DEBUG] factory.py: create_embedding_provider called with provider_type={settings.provider_type}, model_name={settings.model_name}", file=sys.stderr)
     
     if settings.provider_type == EmbeddingProviderType.FASTEMBED:
@@ -20,7 +19,7 @@ def create_embedding_provider(settings: EmbeddingProviderSettings) -> EmbeddingP
             provider = FastEmbedProvider(settings.model_name)
             #             print(f"[DEBUG] factory.py: FastEmbedProvider created successfully", file=sys.stderr)
             return provider
-        except Exception as e:
+        except Exception:
             #             print(f"[ERROR] factory.py: Failed to create FastEmbedProvider: {type(e).__name__}: {e}", file=sys.stderr)
             raise
     else:

@@ -1,6 +1,5 @@
 import argparse
 import sys
-import os
 
 
 def main():
@@ -36,7 +35,7 @@ def main():
 
         # print(f"[DEBUG] main.py: Starting MCP server with transport={args.transport}", file=sys.stderr)
         mcp.run(transport=args.transport)
-    except Exception as e:
+    except Exception:
         #         print(f"[ERROR] main.py: Exception occurred: {type(e).__name__}: {e}", file=sys.stderr)
         import traceback
         traceback.print_exc(file=sys.stderr)

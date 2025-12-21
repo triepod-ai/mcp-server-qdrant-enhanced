@@ -22,7 +22,7 @@ def main():
         print("Starting MCP SSE server (FastMCP native transport)", file=sys.stderr)
         mcp.run(transport="sse")
 
-    except Exception as e:
+    except Exception:
         import traceback
         traceback.print_exc(file=sys.stderr)
         sys.exit(1)

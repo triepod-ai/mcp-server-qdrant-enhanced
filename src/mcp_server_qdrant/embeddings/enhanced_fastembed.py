@@ -31,7 +31,7 @@ class EnhancedFastEmbedProvider(EmbeddingProvider):
             # print(f"[DEBUG] enhanced_fastembed.py: Creating default TextEmbedding with model={default_model}, cuda={self.use_cuda}", file=sys.stderr)
             self._model_cache[default_model] = self._create_text_embedding(default_model)
             # print(f"[DEBUG] enhanced_fastembed.py: Default TextEmbedding created successfully", file=sys.stderr)
-        except Exception as e:
+        except Exception:
             # print(f"[ERROR] enhanced_fastembed.py: Failed to create default TextEmbedding: {type(e).__name__}: {e}", file=sys.stderr)
             import traceback
             traceback.print_exc(file=sys.stderr)

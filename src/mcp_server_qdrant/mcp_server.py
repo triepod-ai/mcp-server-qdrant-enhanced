@@ -32,7 +32,6 @@ class QdrantMCPServer(FastMCP):
         instructions: str | None = None,
         **settings: Any,
     ):
-        import sys
         # print(f"[DEBUG] enhanced_mcp_server.py: EnhancedQdrantMCPServer.__init__ called", file=sys.stderr)
         
         self.tool_settings = tool_settings
@@ -47,7 +46,7 @@ class QdrantMCPServer(FastMCP):
                 default_collection_name=qdrant_settings.collection_name,
             )
             # print(f"[DEBUG] enhanced_mcp_server.py: EnhancedQdrantConnector created successfully", file=sys.stderr)
-        except Exception as e:
+        except Exception:
             # print(f"[ERROR] enhanced_mcp_server.py: Failed to create EnhancedQdrantConnector: {type(e).__name__}: {e}", file=sys.stderr)
             raise
 
@@ -55,7 +54,7 @@ class QdrantMCPServer(FastMCP):
             # print(f"[DEBUG] enhanced_mcp_server.py: Calling FastMCP.__init__", file=sys.stderr)
             super().__init__(name=name, instructions=instructions, **settings)
             # print(f"[DEBUG] enhanced_mcp_server.py: FastMCP.__init__ completed successfully", file=sys.stderr)
-        except Exception as e:
+        except Exception:
             # print(f"[ERROR] enhanced_mcp_server.py: FastMCP.__init__ failed: {type(e).__name__}: {e}", file=sys.stderr)
             raise
 
@@ -63,7 +62,7 @@ class QdrantMCPServer(FastMCP):
             # print(f"[DEBUG] enhanced_mcp_server.py: Setting up enhanced tools", file=sys.stderr)
             self.setup_tools()
             # print(f"[DEBUG] enhanced_mcp_server.py: Enhanced tools setup completed", file=sys.stderr)
-        except Exception as e:
+        except Exception:
             # print(f"[ERROR] enhanced_mcp_server.py: setup_tools failed: {type(e).__name__}: {e}", file=sys.stderr)
             raise
 
@@ -234,17 +233,17 @@ class QdrantMCPServer(FastMCP):
                 result += f"**Points:** {info.get('points_count', 0)}\n"
                 result += f"**Indexed Vectors:** {info.get('indexed_vectors_count', 0)}\n\n"
                 
-                result += f"**Vector Configuration:**\n"
+                result += "**Vector Configuration:**\n"
                 result += f"   Vector Name: {vector_config.get('vector_name', 'unknown')}\n"
                 result += f"   Dimensions: {vector_config.get('dimensions', 'unknown')}\n"
                 result += f"   FastEmbed Model: {vector_config.get('fastembed_model', 'unknown')}\n\n"
                 
                 if config.get("quantization_config"):
-                    result += f"**Optimizations:**\n"
-                    result += f"   Quantization: Enabled\n"
+                    result += "**Optimizations:**\n"
+                    result += "   Quantization: Enabled\n"
                 else:
-                    result += f"**Optimizations:**\n"
-                    result += f"   Quantization: Disabled\n"
+                    result += "**Optimizations:**\n"
+                    result += "   Quantization: Disabled\n"
                 
                 return result
                 

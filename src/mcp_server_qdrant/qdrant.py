@@ -40,7 +40,6 @@ class QdrantConnector:
         embedding_provider: EmbeddingProvider,
         qdrant_local_path: Optional[str] = None,
     ):
-        import sys
         #         print(f"[DEBUG] qdrant.py: QdrantConnector.__init__ called", file=sys.stderr)
         #         print(f"[DEBUG] qdrant.py:   qdrant_url={qdrant_url}", file=sys.stderr)
         #         print(f"[DEBUG] qdrant.py:   qdrant_api_key={'***' if qdrant_api_key else None}", file=sys.stderr)
@@ -58,7 +57,7 @@ class QdrantConnector:
                 location=qdrant_url, api_key=qdrant_api_key, path=qdrant_local_path
             )
             #             print(f"[DEBUG] qdrant.py: AsyncQdrantClient created successfully", file=sys.stderr)
-        except Exception as e:
+        except Exception:
             #             print(f"[ERROR] qdrant.py: Failed to create AsyncQdrantClient: {type(e).__name__}: {e}", file=sys.stderr)
             raise
 

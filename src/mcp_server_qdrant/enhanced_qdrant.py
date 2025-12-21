@@ -5,7 +5,6 @@ import logging
 import sys
 import uuid
 import asyncio
-from datetime import datetime
 from typing import Any, Dict, Optional, List
 from pydantic import BaseModel, validator
 from qdrant_client import AsyncQdrantClient, models
@@ -71,7 +70,6 @@ class EnhancedQdrantConnector:
         embedding_settings: EnhancedEmbeddingProviderSettings,
         default_collection_name: Optional[str] = None,
     ):
-        import sys
         # print(f"[DEBUG] enhanced_qdrant.py: EnhancedQdrantConnector.__init__ called", file=sys.stderr)
         
         self._qdrant_settings = qdrant_settings
@@ -92,7 +90,7 @@ class EnhancedQdrantConnector:
                 path=qdrant_settings.local_path
             )
             # print(f"[DEBUG] enhanced_qdrant.py: AsyncQdrantClient created successfully", file=sys.stderr)
-        except Exception as e:
+        except Exception:
             # print(f"[ERROR] enhanced_qdrant.py: Failed to create AsyncQdrantClient: {type(e).__name__}: {e}", file=sys.stderr)
             raise
 
@@ -362,7 +360,7 @@ class EnhancedQdrantConnector:
                 if attempt == max_retries - 1:
                     # Check for vector name related errors
                     if "vector name" in error_msg or "using" in error_msg:
-                        print(f"[ERROR] enhanced_qdrant.py: Vector name mismatch detected!", file=sys.stderr)
+                        print("[ERROR] enhanced_qdrant.py: Vector name mismatch detected!", file=sys.stderr)
                         print(f"[ERROR] enhanced_qdrant.py: Collection '{collection_name}' requires explicit vector name. "
                               f"Expected: Check collection config vs actual usage. "
                               f"Current model uses vector name: '{vector_name}'. "
@@ -415,7 +413,6 @@ class EnhancedQdrantConnector:
                 ef_construct = min(100, ef_construct)
                 m = min(8, m)
 
-            import sys
             # print(f"[DEBUG] enhanced_qdrant.py: Creating collection {collection_name} with vector_size={vector_size}, vector_name={vector_name}", file=sys.stderr)
             
             # Create collection with optimized configuration

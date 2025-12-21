@@ -9,6 +9,8 @@
 
 **Enhanced Model Context Protocol server** for [Qdrant](https://qdrant.tech/) vector database with advanced features including GPU acceleration, collection-specific embedding models, and production deployment automation.
 
+> ⚠️ **Disclaimer**: This is a community-maintained enhancement by [triepod-ai](https://github.com/triepod-ai), not an official Qdrant product. For the official MCP server, see [modelcontextprotocol/mcp-server-qdrant](https://github.com/modelcontextprotocol/servers/tree/main/src/qdrant). This project is not affiliated with, endorsed by, or sponsored by Qdrant.
+
 ## 🌟 Why This Enhanced Version?
 
 This fork transforms the basic MCP server into a **production-ready solution** with:
@@ -71,6 +73,127 @@ An enhanced Model Context Protocol server for keeping and retrieving memories in
 - **CUDA:** Version 12.x with cuDNN 9.13.0 for optimal GPU acceleration
 - **GPU Memory:** 12GB+ VRAM recommended for large document processing
 - **Stress Tested:** 100% success rate across 500 documents with zero failures
+
+## 🛠️ Tool Examples
+
+This server exposes 6 MCP tools. Here are working examples for each:
+
+### qdrant_store - Store a Document
+
+Store text content with optional metadata:
+
+```json
+{
+  "name": "qdrant_store",
+  "arguments": {
+    "information": "Python's asyncio library provides infrastructure for writing single-threaded concurrent code using coroutines.",
+    "collection_name": "programming_notes",
+    "metadata": {
+      "language": "python",
+      "topic": "concurrency",
+      "difficulty": "intermediate"
+    }
+  }
+}
+```
+
+**Response:** `"Stored in programming_notes using all-minilm-l6-v2 (384D): Python's asyncio library..."`
+
+### qdrant_find - Semantic Search
+
+Search for similar documents:
+
+```json
+{
+  "name": "qdrant_find",
+  "arguments": {
+    "query": "how to write async code in Python",
+    "collection_name": "programming_notes",
+    "limit": 5,
+    "score_threshold": 0.5
+  }
+}
+```
+
+**Response:**
+```json
+{
+  "query": "how to write async code in Python",
+  "collection": "programming_notes",
+  "results": [
+    {
+      "content": "Python's asyncio library provides infrastructure...",
+      "score": 0.8234,
+      "metadata": {"language": "python", "topic": "concurrency"},
+      "vector_model": "all-minilm-l6-v2"
+    }
+  ],
+  "total_found": 1
+}
+```
+
+### qdrant_bulk_store - Batch Storage
+
+Store multiple documents efficiently:
+
+```json
+{
+  "name": "qdrant_bulk_store",
+  "arguments": {
+    "documents": [
+      "React uses a virtual DOM for efficient updates",
+      "Vue.js provides reactive data binding",
+      "Angular uses TypeScript by default"
+    ],
+    "collection_name": "frontend_frameworks",
+    "metadata_list": [
+      {"framework": "react"},
+      {"framework": "vue"},
+      {"framework": "angular"}
+    ],
+    "batch_size": 100
+  }
+}
+```
+
+**Response:** `{"success": true, "stored_count": 3, "batch_count": 1, ...}`
+
+### qdrant_list_collections - List All Collections
+
+```json
+{
+  "name": "qdrant_list_collections",
+  "arguments": {}
+}
+```
+
+**Response:** Lists all collections with their vector configurations and point counts.
+
+### qdrant_collection_info - Get Collection Details
+
+```json
+{
+  "name": "qdrant_collection_info",
+  "arguments": {
+    "collection_name": "programming_notes"
+  }
+}
+```
+
+**Response:** Detailed info including vector dimensions, model, point count, and optimizations.
+
+### qdrant_model_mappings - View Embedding Model Configuration
+
+```json
+{
+  "name": "qdrant_model_mappings",
+  "arguments": {}
+}
+```
+
+**Response:** Shows which collections use which embedding models (384D/768D/1024D).
+
+---
 
 ## 🚀 Quick Start
 

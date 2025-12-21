@@ -3,7 +3,6 @@ Enhanced main entry point for the mcp-server-qdrant with multi-model support.
 """
 import argparse
 import sys
-import os
 
 
 def main():
@@ -46,7 +45,7 @@ def main():
         
         mcp.run(transport=args.transport)
         
-    except Exception as e:
+    except Exception:
         # print(f"[ERROR] enhanced_main.py: Exception occurred: {type(e).__name__}: {e}", file=sys.stderr)
         import traceback
         traceback.print_exc(file=sys.stderr)

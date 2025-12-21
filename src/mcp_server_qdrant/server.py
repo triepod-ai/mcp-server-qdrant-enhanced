@@ -32,7 +32,7 @@ try:
         embedding_provider_settings=embedding_settings,
     )
     #     print("[DEBUG] server.py: QdrantMCPServer instance created successfully", file=sys.stderr)
-except Exception as e:
+except Exception:
     #     print(f"[ERROR] server.py: Failed to initialize server: {type(e).__name__}: {e}", file=sys.stderr)
     import traceback
     traceback.print_exc(file=sys.stderr)
