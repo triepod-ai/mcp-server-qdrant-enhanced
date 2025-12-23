@@ -4,7 +4,7 @@ Enhanced MCP server with collection-specific embedding models and optimized conf
 import json
 import logging
 from datetime import datetime
-from typing import Any, List, Dict, Annotated
+from typing import Any, List, Dict, Annotated, Optional
 from pydantic import Field
 from mcp.server.fastmcp import Context, FastMCP
 from mcp.types import ToolAnnotations
@@ -148,7 +148,8 @@ class QdrantMCPServer(FastMCP):
                         "score": round(result.score, 4),
                         "metadata": result.metadata or {},
                         "collection": result.collection_name,
-                        "vector_model": result.vector_name
+                        "vector_model": result.vector_name,
+                        "point_id": result.point_id  # Include point ID for updates
                     })
                 
                 return {
@@ -297,27 +298,82 @@ class QdrantMCPServer(FastMCP):
         async def qdrant_model_mappings(ctx: Context) -> str:
             """
             Show current collection-to-model mappings.
-            
+
             :param ctx: The context for the request.
             :return: Current model mappings configuration.
             """
             await ctx.debug("Showing collection-to-model mappings")
-            
+
             from mcp_server_qdrant.enhanced_settings import COLLECTION_MODEL_MAPPINGS, EMBEDDING_MODEL_CONFIGS
-            
+
             result = "📋 **Collection Model Mappings:**\n\n"
-            
+
             for collection, model in COLLECTION_MODEL_MAPPINGS.items():
                 config = EMBEDDING_MODEL_CONFIGS.get(model, {})
                 result += f"**{collection}**\n"
                 result += f"   Model: {model}\n"
                 result += f"   Dimensions: {config.get('dimensions', 'unknown')}\n"
                 result += f"   FastEmbed: {config.get('fastembed_model', 'unknown')}\n\n"
-            
+
             result += "📚 **Available Model Configs:**\n\n"
             for model, config in EMBEDDING_MODEL_CONFIGS.items():
                 result += f"**{model}**: {config.get('dimensions')}D ({config.get('fastembed_model')})\n"
-                
+
+            return result
+
+        async def qdrant_get_point(
+            ctx: Context,
+            point_id: Annotated[str, Field(description="The point ID (UUID hex string) to retrieve. Get point IDs from qdrant_find search results.")],
+            collection_name: Annotated[str, Field(description="Name of the collection containing the point.")]
+        ) -> Dict[str, Any]:
+            """
+            Retrieve a single point by ID for inspection or verification.
+
+            :param ctx: The context for the request.
+            :param point_id: The point ID (UUID hex string) to retrieve. Get point IDs from qdrant_find search results.
+            :param collection_name: Name of the collection containing the point.
+            :return: Point data including ID, payload (document + metadata), and collection name.
+            """
+            await ctx.debug(f"Retrieving point {point_id} from collection {collection_name}")
+
+            result = await self.qdrant_connector.get_point(
+                point_id=point_id,
+                collection_name=collection_name
+            )
+
+            result["timestamp"] = datetime.utcnow().isoformat()
+            return result
+
+        async def qdrant_update_payload(
+            ctx: Context,
+            point_ids: Annotated[List[str], Field(description="List of point IDs to update. Get IDs from qdrant_find search results.")],
+            payload: Annotated[Dict[str, Any], Field(description="Payload fields to add or update. Uses merge semantics - only specified fields are modified, existing fields are preserved. Example: {'status': 'processed', 'processed_at': '2025-12-23'}")],
+            collection_name: Annotated[str, Field(description="Name of the collection containing the points to update.")],
+            key: Annotated[Optional[str], Field(default=None, description="REQUIRED for nested updates. Use 'metadata' to update payload.metadata.{field} (e.g., sync_status, synced_to_asana). Without this, updates create root-level payload fields instead of updating nested metadata.")] = None
+        ) -> Dict[str, Any]:
+            """
+            Update payload fields on existing points without re-embedding (10-100x faster than re-storing).
+
+            Uses merge semantics - only specified fields are modified, existing fields are preserved.
+            Does NOT require re-embedding the document content.
+
+            :param ctx: The context for the request.
+            :param point_ids: List of point IDs to update. Get IDs from qdrant_find search results.
+            :param payload: Payload fields to add or update. Uses merge semantics.
+            :param collection_name: Name of the collection containing the points to update.
+            :param key: Optional nested path to update within (e.g., 'metadata' to update metadata.field).
+            :return: Update result with success status and details.
+            """
+            await ctx.debug(f"Updating {len(point_ids)} points in collection {collection_name}")
+
+            result = await self.qdrant_connector.update_payload(
+                point_ids=point_ids,
+                payload=payload,
+                collection_name=collection_name,
+                key=key
+            )
+
+            result["timestamp"] = datetime.utcnow().isoformat()
             return result
 
         # Register tools with enhanced descriptions and annotations
@@ -380,3 +436,23 @@ class QdrantMCPServer(FastMCP):
                 openWorldHint=False      # In-memory config
             )
         )(qdrant_model_mappings)
+
+        self.tool(
+            description="Retrieve a single point by ID for inspection or verification after updates.",
+            annotations=ToolAnnotations(
+                readOnlyHint=True,       # Only reads data
+                destructiveHint=False,   # No modifications
+                idempotentHint=True,     # Same ID → same result
+                openWorldHint=False      # Local Qdrant instance
+            )
+        )(qdrant_get_point)
+
+        self.tool(
+            description="Update payload fields on existing points without re-embedding (10-100x faster than re-storing). Uses merge semantics. IMPORTANT: Qdrant payloads have nested structure (payload.document + payload.metadata). Use key='metadata' to update metadata fields like sync_status, synced_to_asana. Without key parameter, updates write to root payload level instead of nested metadata.",
+            annotations=ToolAnnotations(
+                readOnlyHint=False,      # Modifies database
+                destructiveHint=False,   # Merges, doesn't destroy
+                idempotentHint=True,     # Same update → same result
+                openWorldHint=False      # Local Qdrant instance
+            )
+        )(qdrant_update_payload)

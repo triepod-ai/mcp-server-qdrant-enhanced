@@ -9,14 +9,6 @@ services:
     stdin_open: true
     tty: true
     network_mode: host
-    runtime: nvidia
-    deploy:
-      resources:
-        reservations:
-          devices:
-            - driver: nvidia
-              count: 1
-              capabilities: [gpu]
     environment:
       - QDRANT_URL=http://localhost:6333
       - COLLECTION_NAME=working_solutions
@@ -27,8 +19,6 @@ services:
       - EMBEDDING_PROVIDER=fastembed
       - EMBEDDING_MODEL=sentence-transformers/all-MiniLM-L6-v2
       - PYTHONUNBUFFERED=1
-      - NVIDIA_VISIBLE_DEVICES=all
-      - FASTEMBED_CUDA=true
     volumes:
       - ./logs:/app/logs:rw
     restart: unless-stopped
@@ -40,14 +30,6 @@ services:
     container_name: mcp-server-qdrant-http
     ports:
       - "10650:10650"
-    runtime: nvidia
-    deploy:
-      resources:
-        reservations:
-          devices:
-            - driver: nvidia
-              count: 1
-              capabilities: [gpu]
     environment:
       - QDRANT_URL=http://host.docker.internal:6333
       - COLLECTION_NAME=working_solutions
@@ -58,8 +40,6 @@ services:
       - EMBEDDING_PROVIDER=fastembed
       - EMBEDDING_MODEL=sentence-transformers/all-MiniLM-L6-v2
       - PYTHONUNBUFFERED=1
-      - NVIDIA_VISIBLE_DEVICES=all
-      - FASTEMBED_CUDA=true
       - MCP_PORT=10650
       - UVICORN_HOST=0.0.0.0
       - UVICORN_PORT=10650

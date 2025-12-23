@@ -274,9 +274,9 @@ async def qdrant_store(ctx: Context, information: str, collection_name: str, met
     await self.qdrant_connector.store(entry, collection_name=collection_name)
 ```
 
-### Tool Annotations (Added: 2025-12-14)
+### Tool Annotations (Updated: 2025-12-23)
 
-All 6 MCP tools now include comprehensive `ToolAnnotations` to help MCP clients (like Claude) better understand tool behavior and optimize usage patterns.
+All 8 MCP tools now include comprehensive `ToolAnnotations` to help MCP clients (like Claude) better understand tool behavior and optimize usage patterns.
 
 **Annotation Structure** (from MCP spec):
 - `readOnlyHint`: Tool only reads data, doesn't modify state
@@ -291,10 +291,12 @@ All 6 MCP tools now include comprehensive `ToolAnnotations` to help MCP clients 
 |------|----------|-------------|------------|-----------|-----------|
 | `qdrant_store` | ❌ | ❌ | ✅ | ❌ | Creates vectors, same content → same embedding, local DB |
 | `qdrant_bulk_store` | ❌ | ❌ | ✅ | ❌ | Batch creates, deterministic embeddings, local DB |
-| `qdrant_find` | ✅ | ❌ | ✅ | ❌ | Read-only search, cacheable results, local DB |
+| `qdrant_find` | ✅ | ❌ | ✅ | ❌ | Read-only search, returns point_ids, cacheable results, local DB |
 | `qdrant_list_collections` | ✅ | ❌ | ✅ | ❌ | Metadata listing, no modifications, local DB |
 | `qdrant_collection_info` | ✅ | ❌ | ✅ | ❌ | Collection inspection, no changes, local DB |
 | `qdrant_model_mappings` | ✅ | ❌ | ✅ | ❌ | Static config display, in-memory data |
+| `qdrant_get_point` | ✅ | ❌ | ✅ | ❌ | Read-only point retrieval by ID, no modifications, local DB |
+| `qdrant_update_payload` | ❌ | ❌ | ✅ | ❌ | Updates payload with merge semantics, doesn't destroy, local DB |
 
 **Implementation Pattern**:
 ```python
@@ -318,6 +320,35 @@ self.tool(
 - **UI Presentation**: Clients can show appropriate warnings for destructive operations
 
 **Security Note**: Per MCP spec, annotations are hints only and should not be used for security-critical decisions. Always obtain explicit user consent before tool invocation.
+
+### Key Lesson: Nested Payload Updates (2025-12-23)
+
+The `qdrant_update_payload` tool has a critical `key` parameter for nested structures:
+
+```
+Qdrant Payload Structure:
+payload
+├── document: "{ content... }"
+└── metadata
+    ├── sync_status: "pending"
+    ├── synced_to_asana: false
+    └── ... other fields
+```
+
+| `key` value | Update target | Use when |
+|-------------|---------------|----------|
+| `None` | Root payload | Updating `payload.field` directly |
+| `"metadata"` | Nested metadata | Updating `payload.metadata.field` |
+
+**Example**: To update `payload.metadata.sync_status`:
+```python
+qdrant_update_payload(
+    point_ids=["abc..."],
+    payload={"sync_status": "synced"},
+    collection_name="session_work_logs",
+    key="metadata"  # REQUIRED - without this, creates payload.sync_status instead!
+)
+```
 
 ### Client Configuration
 The server supports multiple MCP clients through dual transport (stdio/sse) and provides template configurations for:

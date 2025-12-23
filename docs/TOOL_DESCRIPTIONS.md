@@ -148,14 +148,15 @@ description='Store documents in Qdrant collections with optional metadata. IMPOR
 
 #### qdrant_find
 ```python
-description="Search Qdrant collections with Redis caching. Uses collection-specific models for optimal results: 1024D BGE-Large (legal_analysis, technical_documentation), 768D BGE-Base (lessons_learned, contextual_knowledge, music_videos), 384D MiniLM (debugging_patterns, working_solutions). <10ms cached searches, 60-90% cache hit rate. Returns structured JSON with scores and metadata."
+description="Search Qdrant collections with Redis caching. Uses collection-specific models for optimal results: 1024D BGE-Large (legal_analysis, technical_documentation), 768D BGE-Base (lessons_learned, contextual_knowledge, music_videos), 384D MiniLM (debugging_patterns, working_solutions). <10ms cached searches, 60-90% cache hit rate. Returns structured JSON with scores, metadata, and point_ids for use with update tools."
 ```
 
 **Key Features**:
 - Specific collection examples for each model tier
 - Performance metrics (cache hit rates, response times)
-- Output format specification
+- Output format specification (includes `point_id` for each result)
 - Real collection names for context
+- **Enhanced (2025-12-23)**: Now returns `point_id` in results for use with `qdrant_get_point` and `qdrant_update_payload`
 
 #### qdrant_list_collections
 ```python
@@ -178,6 +179,78 @@ description="Show collection-to-model mappings with all three model tiers. 1024D
 - Specific collection examples
 - Use case categorization
 - Purpose statement (reference tool)
+
+#### qdrant_get_point (Added: 2025-12-23)
+```python
+description="Retrieve a single point by ID for inspection or verification after updates."
+```
+
+**Key Features**:
+- Point ID retrieved from `qdrant_find` search results
+- Returns full payload (document + metadata)
+- Read-only operation (no modifications)
+- Useful for verifying updates worked
+- Returns point ID, payload, and collection name
+
+**Use Case**:
+```
+1. Search with qdrant_find → get point_id from results
+2. Verify/inspect with qdrant_get_point(point_id, collection_name)
+```
+
+#### qdrant_update_payload (Added: 2025-12-23)
+```python
+description="Update payload fields on existing points without re-embedding (10-100x faster than re-storing). Uses merge semantics."
+```
+
+**Key Features**:
+- **Merge semantics**: Only specified fields are modified, existing fields preserved
+- **No re-embedding**: 10-100x faster than re-storing the entire document
+- **Idempotent**: Safe to retry on failure
+- **Batch support**: Update multiple points in a single call
+
+**Critical: The `key` Parameter for Nested Structures**
+
+Qdrant payload has nested structure: `payload.document` and `payload.metadata.{fields}`. The `key` parameter controls WHERE updates are applied:
+
+| `key` value | Update target | Example |
+|-------------|---------------|---------|
+| `None` (default) | Root payload level | Creates `payload.sync_status` |
+| `"metadata"` | Nested metadata object | Updates `payload.metadata.sync_status` |
+
+**Without `key`** - Updates write to ROOT level:
+```python
+qdrant_update_payload(
+    point_ids=["abc..."],
+    payload={"sync_status": "synced"},  # Creates payload.sync_status (WRONG!)
+    collection_name="session_work_logs"
+)
+```
+
+**With `key="metadata"`** - Updates target NESTED metadata object:
+```python
+qdrant_update_payload(
+    point_ids=["abc..."],
+    payload={"sync_status": "synced"},  # Updates payload.metadata.sync_status (CORRECT!)
+    collection_name="session_work_logs",
+    key="metadata"
+)
+```
+
+**Use Case** (session_work_logs sync workflow):
+```
+1. Search: qdrant_find(query="...", collection_name="session_work_logs")
+   → Returns point_ids in results
+
+2. Update: qdrant_update_payload(
+     point_ids=["abc123..."],
+     payload={"sync_status": "synced", "synced_to_asana": true},
+     collection_name="session_work_logs",
+     key="metadata"  # REQUIRED for nested metadata fields!
+   )
+
+3. Verify: qdrant_get_point(point_id="abc123...", collection_name="session_work_logs")
+```
 
 ## Quality Metrics
 
@@ -215,4 +288,4 @@ description="Show collection-to-model mappings with all three model tiers. 1024D
 
 ---
 
-*Last Updated: July 23, 2025 - Based on Enhanced Qdrant MCP Server tool description improvements*
+*Last Updated: December 23, 2025 - Added qdrant_get_point and qdrant_update_payload tools for point retrieval and payload updates*

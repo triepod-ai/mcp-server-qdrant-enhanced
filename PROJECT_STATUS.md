@@ -26,6 +26,126 @@ This document tracks the development progress and session history for the mcp-se
 
 ## Timeline
 
+## Session Export - 2025-11-02 13:00:00
+
+**MCP HTTP Transport Timeout Resolution & Direct HTTP Integration**
+
+Successfully diagnosed and fixed MCP tool timeout issues by switching from STDIO wrapper to direct HTTP transport configuration.
+
+### Key Accomplishments
+1. **Root Cause Identified**: STDIO wrapper script adding unnecessary complexity and causing timeouts
+2. **Direct HTTP Transport**: Reconfigured to use `http://localhost:10650/mcp` directly without wrapper
+3. **Instant Response**: Both store and find operations now work without timeouts
+4. **Testing Infrastructure**: Created comprehensive curl testing guide and automated test script
+5. **Documentation**: Added slash command `/test-mcp-http` for quick validation
+
+### Problem Analysis
+- **Initial Symptom**: MCP tool calls (qdrant_store, qdrant_find) timing out from Claude Code
+- **User Suspicion**: Video driver updates breaking MCP (turned out to be configuration issue)
+- **Container Status**: Always working perfectly - validated via curl with proper MCP protocol
+- **Actual Issue**: STDIO wrapper (`/home/bryan/run-mcp-qdrant-http.sh`) causing timeouts
+
+### Investigation Process
+1. **Container Validation**:
+   - HTTP endpoint responding correctly (200 OK)
+   - GPU acceleration working (CUDA providers available)
+   - All 6 tools listed successfully
+   - Direct curl tests all passing
+2. **Protocol Validation**:
+   - Session initialization working
+   - Tool listing successful
+   - Store operation: ✅ 384D embeddings with GPU
+   - Search operation: ✅ 0.612 similarity score
+3. **Configuration Discovery**:
+   - Found 3 HTTP-to-STDIO bridge processes running
+   - MCP configured via `~/.claude.json` with wrapper script
+   - Direct HTTP transport available but not being used
+
+### Solution Implemented
+```bash
+# Removed STDIO wrapper configuration
+claude mcp remove qdrant-http
+
+# Added direct HTTP transport
+claude mcp add -t http qdrant-http http://localhost:10650/mcp
+
+# Result: ✓ Connected (HTTP)
+```
+
+### Testing Infrastructure Created
+
+**1. Automated Test Script**: `scripts/test-mcp-http.sh`
+- Complete MCP protocol sequence validation
+- 5-step test: init → notify → list → store → find
+- Colorized output with clear success/failure indicators
+- Validates GPU acceleration and semantic search
+
+**2. Slash Command**: `.claude/commands/test-mcp-http.md`
+- Quick testing via `/test-mcp-http` in Claude Code
+- Runs automated test script with full output
+
+**3. Comprehensive Guide**: `docs/CURL_TESTING_GUIDE.md`
+- Complete manual testing instructions
+- All 6 tools documented with curl examples
+- Troubleshooting section for common errors
+- Performance benchmarking examples
+- Container health checking commands
+
+### Validation Results
+```
+✅ Store: Instant response (384D all-minilm-l6-v2)
+✅ Find: 0.6752 similarity score
+✅ No timeouts
+✅ GPU acceleration confirmed
+✅ All 6 tools accessible
+```
+
+**Test Output:**
+```
+✅ Session ID: b77e26ae31b54b6f8b9b0fa4cd9e7ab9
+✅ Found 6 Qdrant tools
+✅ Document stored (GPU-accelerated)
+✅ Search successful (0.5297 similarity)
+```
+
+### MCP Protocol Requirements Documented
+- **Headers**: Must include both `application/json, text/event-stream`
+- **Session Management**: Use `mcp-session-id` header (not `X-Session-Id`)
+- **Initialization Sequence**: initialize → notifications/initialized → tool calls
+- **Common Errors**: 406 (missing headers), 400 (protocol violations)
+
+### Technical Specifications
+- **Transport Type**: Streamable HTTP (FastMCP streamable_http_app)
+- **Endpoint**: http://localhost:10650/mcp
+- **Methods**: GET (init), POST (tools), DELETE (cleanup)
+- **Session Protocol**: MCP 2024-11-05
+- **GPU Status**: NVIDIA RTX 3080 Ti, Driver 581.57, CUDA 12.x
+- **CUDA Providers**: TensorrtExecutionProvider, CUDAExecutionProvider, CPUExecutionProvider
+
+### Files Created/Modified
+```
+NEW FILES:
+- scripts/test-mcp-http.sh (127 lines) - Automated test script
+- .claude/commands/test-mcp-http.md - Slash command definition
+- docs/CURL_TESTING_GUIDE.md (478 lines) - Complete testing guide
+
+MODIFIED:
+- ~/.claude.json - Removed wrapper, added direct HTTP transport
+```
+
+### Key Learnings
+1. **Container Health ≠ Client Connection**: Container can be perfect while client has issues
+2. **Direct HTTP > STDIO Wrapper**: Eliminates complexity and timeout issues
+3. **Driver Updates Not Culprit**: User's suspicion about video drivers was correlation not causation
+4. **curl Validation Critical**: Always test container directly before debugging client
+5. **MCP Protocol Strict**: Requires exact header format and initialization sequence
+
+### Impact
+- **Before**: MCP tools timing out, unusable from Claude Code
+- **After**: Instant responses, full GPU acceleration, all 6 tools working
+- **User Experience**: Restored functionality that "used to work"
+- **Documentation**: Complete testing infrastructure for future troubleshooting
+
 ## Session Export - 2025-10-05 (Date TBD)
 
 **Performance Claims Validation & Documentation Transparency Enhancement**

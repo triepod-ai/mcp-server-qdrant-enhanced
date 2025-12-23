@@ -24,7 +24,8 @@ class SearchResult(BaseModel):
     metadata: Optional[Dict[str, Any]] = None
     collection_name: str
     vector_name: str
-    
+    point_id: Optional[str] = None  # Point ID for updates
+
     @property
     def is_relevant(self) -> bool:
         """Check if result meets relevance threshold."""
@@ -48,14 +49,15 @@ class Entry(BaseModel):
             raise ValueError('Invalid metadata format')
         return v
     
-    def to_search_result(self, score: float, collection_name: str, vector_name: str) -> SearchResult:
+    def to_search_result(self, score: float, collection_name: str, vector_name: str, point_id: Optional[str] = None) -> SearchResult:
         """Convert to SearchResult with additional context."""
         return SearchResult(
             content=self.content,
             score=score,
             metadata=self.metadata,
             collection_name=collection_name,
-            vector_name=vector_name
+            vector_name=vector_name,
+            point_id=point_id
         )
 
 
@@ -300,7 +302,8 @@ class EnhancedQdrantConnector:
                     search_result = entry.to_search_result(
                         score=result.score if include_score else 1.0,
                         collection_name=collection_name,
-                        vector_name=vector_name
+                        vector_name=vector_name,
+                        point_id=str(result.id)  # Capture point ID for updates
                     )
                     structured_results.append(search_result)
             
@@ -461,9 +464,78 @@ class EnhancedQdrantConnector:
         """List all collections with their detailed information."""
         collection_names = await self.get_collection_names()
         collections_info = []
-        
+
         for name in collection_names:
             info = await self.get_collection_info(name)
             collections_info.append(info)
-            
+
         return collections_info
+
+    async def get_point(self, point_id: str, collection_name: str) -> Dict[str, Any]:
+        """Retrieve a single point by ID.
+
+        Args:
+            point_id: The point ID (UUID hex string)
+            collection_name: Collection to retrieve from
+
+        Returns:
+            Dictionary with point id, payload, and collection_name
+        """
+        try:
+            results = await self._client.retrieve(
+                collection_name=collection_name,
+                ids=[point_id],
+                with_payload=True,
+                with_vectors=False
+            )
+            if not results:
+                return {"error": f"Point {point_id} not found", "collection_name": collection_name}
+            point = results[0]
+            return {
+                "id": str(point.id),
+                "payload": point.payload,
+                "collection_name": collection_name
+            }
+        except Exception as e:
+            return {"error": str(e), "point_id": point_id, "collection_name": collection_name}
+
+    async def update_payload(
+        self,
+        point_ids: List[str],
+        payload: Dict[str, Any],
+        collection_name: str,
+        key: Optional[str] = None
+    ) -> Dict[str, Any]:
+        """Update payload fields on existing points (merge semantics).
+
+        Args:
+            point_ids: List of point IDs to update
+            payload: Fields to add/merge
+            collection_name: Target collection
+            key: Optional nested path (e.g., 'metadata' to update metadata.field)
+
+        Returns:
+            Dictionary with success status and update details
+        """
+        try:
+            await self._client.set_payload(
+                collection_name=collection_name,
+                payload=payload,
+                points=point_ids,
+                key=key,
+                wait=True
+            )
+            return {
+                "success": True,
+                "updated_count": len(point_ids),
+                "collection_name": collection_name,
+                "updated_fields": list(payload.keys()),
+                "key_path": key
+            }
+        except Exception as e:
+            return {
+                "success": False,
+                "error": str(e),
+                "collection_name": collection_name,
+                "point_ids": point_ids
+            }
