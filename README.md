@@ -76,7 +76,7 @@ An enhanced Model Context Protocol server for keeping and retrieving memories in
 
 ## 🛠️ Tool Examples
 
-This server exposes 6 MCP tools. Here are working examples for each:
+This server exposes 9 MCP tools. Here are working examples for each:
 
 ### qdrant_store - Store a Document
 
@@ -192,6 +192,74 @@ Store multiple documents efficiently:
 ```
 
 **Response:** Shows which collections use which embedding models (384D/768D/1024D).
+
+### qdrant_get_point - Retrieve Point by ID
+
+Get a single point by ID for inspection or verification:
+
+```json
+{
+  "name": "qdrant_get_point",
+  "arguments": {
+    "point_id": "abc123-def456-...",
+    "collection_name": "programming_notes"
+  }
+}
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "point_id": "abc123-def456-...",
+  "collection_name": "programming_notes",
+  "payload": {
+    "document": "Python's asyncio library...",
+    "metadata": {"language": "python", "topic": "concurrency"}
+  },
+  "timestamp": "2025-12-23T10:30:00.000Z"
+}
+```
+
+> **Tip:** Get `point_id` values from `qdrant_find` search results.
+
+### qdrant_update_payload - Update Point Metadata
+
+Update payload fields without re-embedding (10-100x faster than re-storing):
+
+```json
+{
+  "name": "qdrant_update_payload",
+  "arguments": {
+    "point_ids": ["abc123-def456-..."],
+    "payload": {"status": "reviewed", "reviewed_at": "2025-12-23"},
+    "collection_name": "programming_notes",
+    "key": "metadata"
+  }
+}
+```
+
+**Response:** `{"success": true, "updated_count": 1, ...}`
+
+> **Important:** Use `key: "metadata"` to update nested metadata fields. Without it, updates write to root payload level.
+
+### qdrant_delete_points - Delete Points (PERMANENT)
+
+**⚠️ WARNING: This operation is PERMANENT and cannot be undone.**
+
+```json
+{
+  "name": "qdrant_delete_points",
+  "arguments": {
+    "point_ids": ["abc123-def456-...", "xyz789-..."],
+    "collection_name": "programming_notes"
+  }
+}
+```
+
+**Response:** `{"success": true, "deleted_count": 2, ...}`
+
+> **Caution:** Deleted points and their vectors cannot be recovered.
 
 ---
 
