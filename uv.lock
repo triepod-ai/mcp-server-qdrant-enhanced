@@ -540,7 +540,7 @@ cli = [
 ]
 
 [[package]]
-name = "mcp-server-qdrant"
+name = "mcp-server-qdrant-enhanced"
 version = "0.7.1"
 source = { editable = "." }
 dependencies = [
