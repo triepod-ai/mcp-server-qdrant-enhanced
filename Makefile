@@ -142,7 +142,7 @@ check-workflow: ## Verify existing workflow is preserved
 	else \
 		echo "❌ docker-compose.enhanced.yml not found"; \
 	fi
-	@if [ -f "/home/bryan/run-qdrant-docker-mcp.sh" ]; then \
+	@if [ -f "$(HOME)/run-qdrant-docker-mcp.sh" ]; then \
 		echo "✅ Wrapper script preserved"; \
 	else \
 		echo "❌ Wrapper script not found"; \

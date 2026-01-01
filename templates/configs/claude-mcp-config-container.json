@@ -1,7 +1,7 @@
 {
   "mcpServers": {
     "qdrant-enhanced-container": {
-      "command": "/home/bryan/mcp-servers/mcp-server-qdrant/run-enhanced-container.sh",
+      "command": "<PROJECT_PATH>/run-enhanced-container.sh",
       "args": [],
       "env": {
         "QDRANT_URL": "http://host.docker.internal:6333",

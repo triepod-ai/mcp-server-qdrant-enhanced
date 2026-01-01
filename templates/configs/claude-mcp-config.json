@@ -1,7 +1,7 @@
 {
   "mcpServers": {
     "qdrant-enhanced": {
-      "command": "/home/bryan/mcp-servers/mcp-server-qdrant/run-enhanced-mcp-qdrant.sh",
+      "command": "<PROJECT_PATH>/run-enhanced-mcp-qdrant.sh",
       "args": [],
       "env": {
         "QDRANT_URL": "http://localhost:6333",

@@ -43,7 +43,7 @@ Successfully diagnosed and fixed MCP tool timeout issues by switching from STDIO
 - **Initial Symptom**: MCP tool calls (qdrant_store, qdrant_find) timing out from Claude Code
 - **User Suspicion**: Video driver updates breaking MCP (turned out to be configuration issue)
 - **Container Status**: Always working perfectly - validated via curl with proper MCP protocol
-- **Actual Issue**: STDIO wrapper (`/home/bryan/run-mcp-qdrant-http.sh`) causing timeouts
+- **Actual Issue**: STDIO wrapper (`$HOME/run-mcp-qdrant-http.sh`) causing timeouts
 
 ### Investigation Process
 1. **Container Validation**:

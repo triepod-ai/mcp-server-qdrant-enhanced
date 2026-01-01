@@ -327,6 +327,7 @@ claude_desktop_config.json
 vscode_mcp_settings.json
 *_config_generated.json
 *_generated.json
+.mcp-test-config.json
 
 # Build and publish artifacts
 *.tar.gz

@@ -11,8 +11,8 @@ BLUE='\033[0;34m'
 YELLOW='\033[1;33m'
 NC='\033[0m' # No Color
 
-# Project directory
-PROJECT_DIR="/home/bryan/mcp-servers/mcp-server-qdrant"
+# Project directory (auto-detect from script location)
+PROJECT_DIR="${PROJECT_DIR:-$(cd "$(dirname "$0")" && pwd)}"
 
 echo -e "${BLUE}🚀 Deploying Enhanced Qdrant MCP Server...${NC}"
 

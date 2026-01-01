@@ -99,7 +99,7 @@ uvx mcpo \
   --name "Qdrant Vector Database API" \
   --description "Enhanced Qdrant MCP Server with GPU acceleration and collection-specific embedding models" \
   --version "0.7.1" \
-  -- /home/bryan/mcp-servers/mcp-server-qdrant/.venv/bin/python -m mcp_server_qdrant.enhanced_main --transport stdio
+  -- ./.venv/bin/python -m mcp_server_qdrant.enhanced_main --transport stdio
 ```
 
 ## Verification Steps

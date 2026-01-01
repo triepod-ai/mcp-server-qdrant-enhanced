@@ -16,7 +16,7 @@ This template enables any MCP server to be exposed as OpenAPI-compatible REST en
 
 ```bash
 # Start the enhanced Qdrant MCP server as REST API
-./start-mcp-api.sh "/home/bryan/mcp-servers/mcp-server-qdrant/.venv/bin/python -m mcp_server_qdrant.enhanced_main --transport stdio" "Enhanced Qdrant MCP Server"
+./start-mcp-api.sh "./.venv/bin/python -m mcp_server_qdrant.enhanced_main --transport stdio" "Enhanced Qdrant MCP Server"
 
 # Access the API
 open http://localhost:9134/docs  # Swagger UI

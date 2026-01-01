@@ -12,8 +12,8 @@ YELLOW='\033[1;33m'
 RED='\033[0;31m'
 NC='\033[0m' # No Color
 
-# Project directory
-PROJECT_DIR="/home/bryan/mcp-servers/mcp-server-qdrant"
+# Project directory (auto-detect from script location)
+PROJECT_DIR="${PROJECT_DIR:-$(cd "$(dirname "$0")/../.." && pwd)}"
 
 log_info() {
     echo -e "${BLUE}ℹ️  $1${NC}"
@@ -267,7 +267,7 @@ quick_test() {
     fi
     
     # Test MCP tools using the wrapper script if available
-    if [[ -f "/home/bryan/run-qdrant-docker-mcp.sh" ]]; then
+    if [[ -f "${HOME}/run-qdrant-docker-mcp.sh" ]]; then
         log_info "Testing MCP tools via wrapper script..."
         
         # Simple test - this would require actual MCP client integration
