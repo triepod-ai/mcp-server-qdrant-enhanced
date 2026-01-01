@@ -2,6 +2,7 @@
 Enhanced HTTP/SSE entry point for the mcp-server-qdrant with multi-model support.
 This variant uses streamable HTTP (SSE) transport instead of stdio.
 """
+
 import sys
 
 
@@ -24,6 +25,7 @@ def main():
 
     except Exception:
         import traceback
+
         traceback.print_exc(file=sys.stderr)
         sys.exit(1)
 

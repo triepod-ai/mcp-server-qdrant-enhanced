@@ -10,11 +10,12 @@ def create_embedding_provider(settings: EmbeddingProviderSettings) -> EmbeddingP
     :return: An instance of the specified embedding provider.
     """
     #     print(f"[DEBUG] factory.py: create_embedding_provider called with provider_type={settings.provider_type}, model_name={settings.model_name}", file=sys.stderr)
-    
+
     if settings.provider_type == EmbeddingProviderType.FASTEMBED:
         try:
             #             print(f"[DEBUG] factory.py: Importing FastEmbedProvider", file=sys.stderr)
             from mcp_server_qdrant.embeddings.fastembed import FastEmbedProvider
+
             #             print(f"[DEBUG] factory.py: Creating FastEmbedProvider with model_name={settings.model_name}", file=sys.stderr)
             provider = FastEmbedProvider(settings.model_name)
             #             print(f"[DEBUG] factory.py: FastEmbedProvider created successfully", file=sys.stderr)

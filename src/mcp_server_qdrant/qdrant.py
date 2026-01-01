@@ -45,12 +45,12 @@ class QdrantConnector:
         #         print(f"[DEBUG] qdrant.py:   qdrant_api_key={'***' if qdrant_api_key else None}", file=sys.stderr)
         #         print(f"[DEBUG] qdrant.py:   collection_name={collection_name}", file=sys.stderr)
         #         print(f"[DEBUG] qdrant.py:   qdrant_local_path={qdrant_local_path}", file=sys.stderr)
-        
+
         self._qdrant_url = qdrant_url.rstrip("/") if qdrant_url else None
         self._qdrant_api_key = qdrant_api_key
         self._default_collection_name = collection_name
         self._embedding_provider = embedding_provider
-        
+
         try:
             #             print(f"[DEBUG] qdrant.py: Creating AsyncQdrantClient", file=sys.stderr)
             self._client = AsyncQdrantClient(

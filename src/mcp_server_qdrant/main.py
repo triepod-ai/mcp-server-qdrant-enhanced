@@ -38,8 +38,10 @@ def main():
     except Exception:
         #         print(f"[ERROR] main.py: Exception occurred: {type(e).__name__}: {e}", file=sys.stderr)
         import traceback
+
         traceback.print_exc(file=sys.stderr)
         sys.exit(1)
+
 
 if __name__ == "__main__":
     main()

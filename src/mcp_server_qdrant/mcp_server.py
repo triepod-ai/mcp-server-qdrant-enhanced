@@ -1,6 +1,7 @@
 """
 Enhanced MCP server with collection-specific embedding models and optimized configurations.
 """
+
 import json
 import logging
 from datetime import datetime
@@ -33,7 +34,7 @@ class QdrantMCPServer(FastMCP):
         **settings: Any,
     ):
         # print(f"[DEBUG] enhanced_mcp_server.py: EnhancedQdrantMCPServer.__init__ called", file=sys.stderr)
-        
+
         self.tool_settings = tool_settings
         self.qdrant_settings = qdrant_settings
         self.embedding_provider_settings = embedding_provider_settings
@@ -76,9 +77,25 @@ class QdrantMCPServer(FastMCP):
 
         async def qdrant_store(
             ctx: Context,
-            information: Annotated[str, Field(description="The text content to store in the vector database. Can be any text content including multi-line text, Unicode characters, and technical documentation. Empty strings are accepted but may not provide useful search results.")],
-            collection_name: Annotated[str, Field(description="Name of the Qdrant collection to store the document in. Must contain only alphanumeric characters, underscores, and hyphens (no spaces or special characters). Collections are auto-created with optimal configurations. Collection names trigger automatic model selection: legal/career content uses 1024D models, knowledge-intensive content uses 768D models, technical/debug content uses 384D models.")],
-            metadata: Annotated[Metadata, Field(default=None, description="Optional JSON metadata object to store alongside the document. Can be any valid JSON structure with unlimited nesting. Use for categorization, filtering, and additional context. Example: {'category': 'tutorial', 'tags': ['python'], 'author': {'name': 'John'}}.")] = None,  # type: ignore
+            information: Annotated[
+                str,
+                Field(
+                    description="The text content to store in the vector database. Can be any text content including multi-line text, Unicode characters, and technical documentation. Empty strings are accepted but may not provide useful search results."
+                ),
+            ],
+            collection_name: Annotated[
+                str,
+                Field(
+                    description="Name of the Qdrant collection to store the document in. Must contain only alphanumeric characters, underscores, and hyphens (no spaces or special characters). Collections are auto-created with optimal configurations. Collection names trigger automatic model selection: legal/career content uses 1024D models, knowledge-intensive content uses 768D models, technical/debug content uses 384D models."
+                ),
+            ],
+            metadata: Annotated[
+                Metadata,
+                Field(
+                    default=None,
+                    description="Optional JSON metadata object to store alongside the document. Can be any valid JSON structure with unlimited nesting. Use for categorization, filtering, and additional context. Example: {'category': 'tutorial', 'tags': ['python'], 'author': {'name': 'John'}}.",
+                ),
+            ] = None,  # type: ignore
         ) -> str:
             """
             Store information in Qdrant with collection-specific embedding model.
@@ -89,24 +106,52 @@ class QdrantMCPServer(FastMCP):
             :param metadata: Optional JSON metadata object to store alongside the document. Can be any valid JSON structure with unlimited nesting. Use for categorization, filtering, and additional context. Example: {"category": "tutorial", "tags": ["python"], "author": {"name": "John"}}.
             :return: A message indicating that the information was stored.
             """
-            await ctx.debug(f"Enhanced storing information in collection {collection_name}")
+            await ctx.debug(
+                f"Enhanced storing information in collection {collection_name}"
+            )
 
             entry = Entry(content=information, metadata=metadata)
             await self.qdrant_connector.store(entry, collection_name=collection_name)
-            
+
             # Get model info for confirmation
-            model_info = self.qdrant_connector._embedding_provider.get_model_info_for_collection(collection_name)
+            model_info = (
+                self.qdrant_connector._embedding_provider.get_model_info_for_collection(
+                    collection_name
+                )
+            )
             vector_name = model_info.get("vector_name", "unknown")
             dimensions = model_info.get("dimensions", "unknown")
-            
+
             return f"Stored in {collection_name} using {vector_name} ({dimensions}D): {information}"
 
         async def qdrant_find(
             ctx: Context,
-            query: Annotated[str, Field(description="The search query text used to find similar documents through semantic vector search. Uses the same embedding model as the target collection for optimal results. Can be single words, phrases, or natural language questions. Empty queries may return all documents or error.")],
-            collection_name: Annotated[str, Field(description="Name of the existing collection to search within. Must be a valid, existing collection name. Non-existent collections will return error in results structure.")],
-            limit: Annotated[int, Field(default=10, description="Maximum number of results to return. Default is 10. Valid range is typically 1-1000+. Higher values may impact performance but provide more comprehensive results.")] = 10,
-            score_threshold: Annotated[float, Field(default=0.0, description="Minimum similarity score for results (0.0-1.0). Default is 0.0 (return all results regardless of score). Higher values filter out less similar results. Typical useful range is 0.3-0.8 depending on use case.")] = 0.0
+            query: Annotated[
+                str,
+                Field(
+                    description="The search query text used to find similar documents through semantic vector search. Uses the same embedding model as the target collection for optimal results. Can be single words, phrases, or natural language questions. Empty queries may return all documents or error."
+                ),
+            ],
+            collection_name: Annotated[
+                str,
+                Field(
+                    description="Name of the existing collection to search within. Must be a valid, existing collection name. Non-existent collections will return error in results structure."
+                ),
+            ],
+            limit: Annotated[
+                int,
+                Field(
+                    default=10,
+                    description="Maximum number of results to return. Default is 10. Valid range is typically 1-1000+. Higher values may impact performance but provide more comprehensive results.",
+                ),
+            ] = 10,
+            score_threshold: Annotated[
+                float,
+                Field(
+                    default=0.0,
+                    description="Minimum similarity score for results (0.0-1.0). Default is 0.0 (return all results regardless of score). Higher values filter out less similar results. Typical useful range is 0.3-0.8 depending on use case.",
+                ),
+            ] = 0.0,
         ) -> Dict[str, Any]:
             """
             Find memories in Qdrant with structured results.
@@ -120,38 +165,42 @@ class QdrantMCPServer(FastMCP):
             :param score_threshold: Minimum similarity score for results (0.0-1.0). Default is 0.0 (return all results regardless of score). Higher values filter out less similar results. Typical useful range is 0.3-0.8 depending on use case.
             :return: Structured search results with metadata.
             """
-            await ctx.debug(f"Enhanced searching in collection {collection_name} for: {query}")
-            
+            await ctx.debug(
+                f"Enhanced searching in collection {collection_name} for: {query}"
+            )
+
             try:
                 # Execute enhanced search
                 search_results = await self.qdrant_connector.search(
                     query=query,
                     collection_name=collection_name,
                     limit=limit,
-                    score_threshold=score_threshold
+                    score_threshold=score_threshold,
                 )
-                
+
                 if not search_results:
                     return {
                         "query": query,
                         "collection": collection_name,
                         "results": [],
                         "total_found": 0,
-                        "message": f"No information found for query '{query}' in collection {collection_name}"
+                        "message": f"No information found for query '{query}' in collection {collection_name}",
                     }
-                
+
                 # Convert to structured response
                 results_data = []
                 for result in search_results:
-                    results_data.append({
-                        "content": result.content,
-                        "score": round(result.score, 4),
-                        "metadata": result.metadata or {},
-                        "collection": result.collection_name,
-                        "vector_model": result.vector_name,
-                        "point_id": result.point_id  # Include point ID for updates
-                    })
-                
+                    results_data.append(
+                        {
+                            "content": result.content,
+                            "score": round(result.score, 4),
+                            "metadata": result.metadata or {},
+                            "collection": result.collection_name,
+                            "vector_model": result.vector_name,
+                            "point_id": result.point_id,  # Include point ID for updates
+                        }
+                    )
+
                 return {
                     "query": query,
                     "collection": collection_name,
@@ -159,104 +208,136 @@ class QdrantMCPServer(FastMCP):
                     "total_found": len(results_data),
                     "search_params": {
                         "limit": limit,
-                        "score_threshold": score_threshold
+                        "score_threshold": score_threshold,
                     },
-                    "timestamp": datetime.utcnow().isoformat()
+                    "timestamp": datetime.utcnow().isoformat(),
                 }
-                
+
             except Exception as e:
                 error_msg = f"Search failed: {str(e)}"
                 logger.error(f"qdrant_find error: {error_msg}")
-                
+
                 return {
                     "query": query,
                     "collection": collection_name,
                     "results": [],
                     "total_found": 0,
                     "error": error_msg,
-                    "timestamp": datetime.utcnow().isoformat()
+                    "timestamp": datetime.utcnow().isoformat(),
                 }
 
         async def qdrant_list_collections(ctx: Context) -> str:
             """
             List all Qdrant collections with their configurations.
-            
+
             :param ctx: The context for the request.
             :return: Formatted list of collections with their info.
             """
             await ctx.debug("Listing all collections with enhanced info")
-            
+
             try:
-                collections_info = await self.qdrant_connector.list_collections_with_info()
-                
+                collections_info = (
+                    await self.qdrant_connector.list_collections_with_info()
+                )
+
                 if not collections_info:
                     return "No collections found in Qdrant."
-                
+
                 result = "Qdrant Collections:\n\n"
                 for info in collections_info:
                     if "error" in info:
-                        result += f"❌ {info['collection_name']}: Error - {info['error']}\n"
+                        result += (
+                            f"❌ {info['collection_name']}: Error - {info['error']}\n"
+                        )
                         continue
-                        
+
                     vector_config = info.get("vector_config", {})
                     result += f"📊 **{info['collection_name']}**\n"
                     result += f"   Status: {info.get('status', 'unknown')}\n"
                     result += f"   Points: {info.get('points_count', 0)}\n"
                     result += f"   Vector: {vector_config.get('vector_name', 'unknown')} ({vector_config.get('dimensions', 'unknown')}D)\n"
                     result += f"   Model: {vector_config.get('fastembed_model', 'unknown')}\n\n"
-                
+
                 return result
-                
+
             except Exception as e:
                 return f"Error listing collections: {str(e)}"
 
         async def qdrant_collection_info(ctx: Context, collection_name: str) -> str:
             """
             Get detailed information about a specific collection.
-            
+
             :param ctx: The context for the request.
             :param collection_name: Name of the collection to inspect.
             :return: Detailed collection information.
             """
             await ctx.debug(f"Getting detailed info for collection: {collection_name}")
-            
+
             try:
                 info = await self.qdrant_connector.get_collection_info(collection_name)
-                
+
                 if "error" in info:
                     return f"Error getting info for {collection_name}: {info['error']}"
-                
+
                 vector_config = info.get("vector_config", {})
                 config = info.get("config", {})
-                
+
                 result = f"🔍 **Collection: {collection_name}**\n\n"
                 result += f"**Status:** {info.get('status', 'unknown')}\n"
                 result += f"**Points:** {info.get('points_count', 0)}\n"
-                result += f"**Indexed Vectors:** {info.get('indexed_vectors_count', 0)}\n\n"
-                
+                result += (
+                    f"**Indexed Vectors:** {info.get('indexed_vectors_count', 0)}\n\n"
+                )
+
                 result += "**Vector Configuration:**\n"
-                result += f"   Vector Name: {vector_config.get('vector_name', 'unknown')}\n"
-                result += f"   Dimensions: {vector_config.get('dimensions', 'unknown')}\n"
+                result += (
+                    f"   Vector Name: {vector_config.get('vector_name', 'unknown')}\n"
+                )
+                result += (
+                    f"   Dimensions: {vector_config.get('dimensions', 'unknown')}\n"
+                )
                 result += f"   FastEmbed Model: {vector_config.get('fastembed_model', 'unknown')}\n\n"
-                
+
                 if config.get("quantization_config"):
                     result += "**Optimizations:**\n"
                     result += "   Quantization: Enabled\n"
                 else:
                     result += "**Optimizations:**\n"
                     result += "   Quantization: Disabled\n"
-                
+
                 return result
-                
+
             except Exception as e:
                 return f"Error getting collection info: {str(e)}"
 
         async def qdrant_bulk_store(
             ctx: Context,
-            documents: Annotated[List[str], Field(description="List of text documents to store in batch for efficient processing. Each document can be any text content including multi-line text and Unicode characters. Empty lists are accepted but perform no operations. Each document follows the same validation rules as the information parameter in qdrant_store.")],
-            collection_name: Annotated[str, Field(description="Name of the Qdrant collection to store documents in. Same validation rules as other collection_name parameters - alphanumeric, underscores, hyphens only. Collection will be auto-created if it doesn't exist with optimal model selection based on name patterns.")],
-            metadata_list: Annotated[List[Metadata], Field(default=None, description="Optional list of JSON metadata objects corresponding to each document. If provided, must exactly match the length of the documents list. Each metadata object corresponds to the document at the same index. Can contain any valid JSON structures. Use None for no metadata on any document.")] = None,  # type: ignore
-            batch_size: Annotated[int, Field(default=100, description="Number of documents to process in each batch for memory and performance optimization. Default is 100. Recommended values: 100-500 for small documents, 10-50 for large documents, 1-10 for memory constrained environments. Affects memory usage and API call frequency.")] = 100
+            documents: Annotated[
+                List[str],
+                Field(
+                    description="List of text documents to store in batch for efficient processing. Each document can be any text content including multi-line text and Unicode characters. Empty lists are accepted but perform no operations. Each document follows the same validation rules as the information parameter in qdrant_store."
+                ),
+            ],
+            collection_name: Annotated[
+                str,
+                Field(
+                    description="Name of the Qdrant collection to store documents in. Same validation rules as other collection_name parameters - alphanumeric, underscores, hyphens only. Collection will be auto-created if it doesn't exist with optimal model selection based on name patterns."
+                ),
+            ],
+            metadata_list: Annotated[
+                List[Metadata],
+                Field(
+                    default=None,
+                    description="Optional list of JSON metadata objects corresponding to each document. If provided, must exactly match the length of the documents list. Each metadata object corresponds to the document at the same index. Can contain any valid JSON structures. Use None for no metadata on any document.",
+                ),
+            ] = None,  # type: ignore
+            batch_size: Annotated[
+                int,
+                Field(
+                    default=100,
+                    description="Number of documents to process in each batch for memory and performance optimization. Default is 100. Recommended values: 100-500 for small documents, 10-50 for large documents, 1-10 for memory constrained environments. Affects memory usage and API call frequency.",
+                ),
+            ] = 100,
         ) -> Dict[str, Any]:
             """
             Store multiple documents efficiently in Qdrant with collection-specific embedding.
@@ -268,31 +349,33 @@ class QdrantMCPServer(FastMCP):
             :param batch_size: Number of documents to process in each batch for memory and performance optimization. Default is 100. Recommended values: 100-500 for small documents, 10-50 for large documents, 1-10 for memory constrained environments. Affects memory usage and API call frequency.
             :return: Storage results with statistics.
             """
-            await ctx.debug(f"Bulk storing {len(documents)} documents in collection {collection_name}")
-            
+            await ctx.debug(
+                f"Bulk storing {len(documents)} documents in collection {collection_name}"
+            )
+
             if metadata_list and len(metadata_list) != len(documents):
                 raise ValueError("metadata_list length must match documents length")
-            
+
             # Create entries from documents and metadata
             entries = []
             for i, document in enumerate(documents):
                 metadata = metadata_list[i] if metadata_list else None
                 entries.append(Entry(content=document, metadata=metadata))
-            
+
             # Execute bulk store operation
             result = await self.qdrant_connector.bulk_store(
-                entries=entries,
-                collection_name=collection_name,
-                batch_size=batch_size
+                entries=entries, collection_name=collection_name, batch_size=batch_size
             )
-            
+
             # Add operation context to result
-            result.update({
-                "operation": "bulk_store",
-                "requested_documents": len(documents),
-                "timestamp": datetime.utcnow().isoformat()
-            })
-            
+            result.update(
+                {
+                    "operation": "bulk_store",
+                    "requested_documents": len(documents),
+                    "timestamp": datetime.utcnow().isoformat(),
+                }
+            )
+
             return result
 
         async def qdrant_model_mappings(ctx: Context) -> str:
@@ -304,7 +387,10 @@ class QdrantMCPServer(FastMCP):
             """
             await ctx.debug("Showing collection-to-model mappings")
 
-            from mcp_server_qdrant.enhanced_settings import COLLECTION_MODEL_MAPPINGS, EMBEDDING_MODEL_CONFIGS
+            from mcp_server_qdrant.enhanced_settings import (
+                COLLECTION_MODEL_MAPPINGS,
+                EMBEDDING_MODEL_CONFIGS,
+            )
 
             result = "📋 **Collection Model Mappings:**\n\n"
 
@@ -313,7 +399,9 @@ class QdrantMCPServer(FastMCP):
                 result += f"**{collection}**\n"
                 result += f"   Model: {model}\n"
                 result += f"   Dimensions: {config.get('dimensions', 'unknown')}\n"
-                result += f"   FastEmbed: {config.get('fastembed_model', 'unknown')}\n\n"
+                result += (
+                    f"   FastEmbed: {config.get('fastembed_model', 'unknown')}\n\n"
+                )
 
             result += "📚 **Available Model Configs:**\n\n"
             for model, config in EMBEDDING_MODEL_CONFIGS.items():
@@ -323,8 +411,15 @@ class QdrantMCPServer(FastMCP):
 
         async def qdrant_get_point(
             ctx: Context,
-            point_id: Annotated[str, Field(description="The point ID (UUID hex string) to retrieve. Get point IDs from qdrant_find search results.")],
-            collection_name: Annotated[str, Field(description="Name of the collection containing the point.")]
+            point_id: Annotated[
+                str,
+                Field(
+                    description="The point ID (UUID hex string) to retrieve. Get point IDs from qdrant_find search results."
+                ),
+            ],
+            collection_name: Annotated[
+                str, Field(description="Name of the collection containing the point.")
+            ],
         ) -> Dict[str, Any]:
             """
             Retrieve a single point by ID for inspection or verification.
@@ -334,11 +429,12 @@ class QdrantMCPServer(FastMCP):
             :param collection_name: Name of the collection containing the point.
             :return: Point data including ID, payload (document + metadata), and collection name.
             """
-            await ctx.debug(f"Retrieving point {point_id} from collection {collection_name}")
+            await ctx.debug(
+                f"Retrieving point {point_id} from collection {collection_name}"
+            )
 
             result = await self.qdrant_connector.get_point(
-                point_id=point_id,
-                collection_name=collection_name
+                point_id=point_id, collection_name=collection_name
             )
 
             result["timestamp"] = datetime.utcnow().isoformat()
@@ -346,10 +442,31 @@ class QdrantMCPServer(FastMCP):
 
         async def qdrant_update_payload(
             ctx: Context,
-            point_ids: Annotated[List[str], Field(description="List of point IDs to update. Get IDs from qdrant_find search results.")],
-            payload: Annotated[Dict[str, Any], Field(description="Payload fields to add or update. Uses merge semantics - only specified fields are modified, existing fields are preserved. Example: {'status': 'processed', 'processed_at': '2025-12-23'}")],
-            collection_name: Annotated[str, Field(description="Name of the collection containing the points to update.")],
-            key: Annotated[Optional[str], Field(default=None, description="REQUIRED for nested updates. Use 'metadata' to update payload.metadata.{field} (e.g., sync_status, synced_to_asana). Without this, updates create root-level payload fields instead of updating nested metadata.")] = None
+            point_ids: Annotated[
+                List[str],
+                Field(
+                    description="List of point IDs to update. Get IDs from qdrant_find search results."
+                ),
+            ],
+            payload: Annotated[
+                Dict[str, Any],
+                Field(
+                    description="Payload fields to add or update. Uses merge semantics - only specified fields are modified, existing fields are preserved. Example: {'status': 'processed', 'processed_at': '2025-12-23'}"
+                ),
+            ],
+            collection_name: Annotated[
+                str,
+                Field(
+                    description="Name of the collection containing the points to update."
+                ),
+            ],
+            key: Annotated[
+                Optional[str],
+                Field(
+                    default=None,
+                    description="REQUIRED for nested updates. Use 'metadata' to update payload.metadata.{field} (e.g., sync_status, synced_to_asana). Without this, updates create root-level payload fields instead of updating nested metadata.",
+                ),
+            ] = None,
         ) -> Dict[str, Any]:
             """
             Update payload fields on existing points without re-embedding (10-100x faster than re-storing).
@@ -364,13 +481,15 @@ class QdrantMCPServer(FastMCP):
             :param key: Optional nested path to update within (e.g., 'metadata' to update metadata.field).
             :return: Update result with success status and details.
             """
-            await ctx.debug(f"Updating {len(point_ids)} points in collection {collection_name}")
+            await ctx.debug(
+                f"Updating {len(point_ids)} points in collection {collection_name}"
+            )
 
             result = await self.qdrant_connector.update_payload(
                 point_ids=point_ids,
                 payload=payload,
                 collection_name=collection_name,
-                key=key
+                key=key,
             )
 
             result["timestamp"] = datetime.utcnow().isoformat()
@@ -378,8 +497,18 @@ class QdrantMCPServer(FastMCP):
 
         async def qdrant_delete_points(
             ctx: Context,
-            point_ids: Annotated[List[str], Field(description="List of point IDs (UUID hex strings) to delete. Get IDs from qdrant_find search results.")],
-            collection_name: Annotated[str, Field(description="Name of the collection containing the points to delete.")]
+            point_ids: Annotated[
+                List[str],
+                Field(
+                    description="List of point IDs (UUID hex strings) to delete. Get IDs from qdrant_find search results."
+                ),
+            ],
+            collection_name: Annotated[
+                str,
+                Field(
+                    description="Name of the collection containing the points to delete."
+                ),
+            ],
         ) -> Dict[str, Any]:
             """
             Delete points from a Qdrant collection by their IDs. PERMANENT operation.
@@ -395,8 +524,7 @@ class QdrantMCPServer(FastMCP):
             await ctx.debug(f"Deleting {len(point_ids)} points from {collection_name}")
 
             result = await self.qdrant_connector.delete_points(
-                point_ids=point_ids,
-                collection_name=collection_name
+                point_ids=point_ids, collection_name=collection_name
             )
 
             result["timestamp"] = datetime.utcnow().isoformat()
@@ -406,89 +534,89 @@ class QdrantMCPServer(FastMCP):
         self.tool(
             description="Store information in Qdrant with automatic collection-specific embedding model selection.",
             annotations=ToolAnnotations(
-                readOnlyHint=False,      # Modifies database
-                destructiveHint=False,   # Creates, doesn't destroy
-                idempotentHint=True,     # Same content → same embedding
-                openWorldHint=False      # Local Qdrant instance
-            )
+                readOnlyHint=False,  # Modifies database
+                destructiveHint=False,  # Creates, doesn't destroy
+                idempotentHint=True,  # Same content → same embedding
+                openWorldHint=False,  # Local Qdrant instance
+            ),
         )(qdrant_store)
-        
+
         self.tool(
             description="Store multiple documents efficiently in Qdrant with collection-specific embedding models and batch processing.",
             annotations=ToolAnnotations(
-                readOnlyHint=False,      # Modifies database
-                destructiveHint=False,   # Creates, doesn't destroy
-                idempotentHint=True,     # Same documents → same embeddings
-                openWorldHint=False      # Local Qdrant instance
-            )
+                readOnlyHint=False,  # Modifies database
+                destructiveHint=False,  # Creates, doesn't destroy
+                idempotentHint=True,  # Same documents → same embeddings
+                openWorldHint=False,  # Local Qdrant instance
+            ),
         )(qdrant_bulk_store)
-        
+
         self.tool(
             description="Search for information in Qdrant using collection-specific embedding model with structured results.",
             annotations=ToolAnnotations(
-                readOnlyHint=True,       # Only reads data
-                destructiveHint=False,   # No modifications
-                idempotentHint=True,     # Same query → same results
-                openWorldHint=False      # Local Qdrant instance
-            )
+                readOnlyHint=True,  # Only reads data
+                destructiveHint=False,  # No modifications
+                idempotentHint=True,  # Same query → same results
+                openWorldHint=False,  # Local Qdrant instance
+            ),
         )(qdrant_find)
-        
+
         self.tool(
             description="List all Qdrant collections with their configurations and model information.",
             annotations=ToolAnnotations(
-                readOnlyHint=True,       # Only reads metadata
-                destructiveHint=False,   # No modifications
-                idempotentHint=True,     # Consistent listing
-                openWorldHint=False      # Local Qdrant instance
-            )
+                readOnlyHint=True,  # Only reads metadata
+                destructiveHint=False,  # No modifications
+                idempotentHint=True,  # Consistent listing
+                openWorldHint=False,  # Local Qdrant instance
+            ),
         )(qdrant_list_collections)
-        
+
         self.tool(
             description="Get detailed information about a specific Qdrant collection.",
             annotations=ToolAnnotations(
-                readOnlyHint=True,       # Only reads metadata
-                destructiveHint=False,   # No modifications
-                idempotentHint=True,     # Consistent info
-                openWorldHint=False      # Local Qdrant instance
-            )
+                readOnlyHint=True,  # Only reads metadata
+                destructiveHint=False,  # No modifications
+                idempotentHint=True,  # Consistent info
+                openWorldHint=False,  # Local Qdrant instance
+            ),
         )(qdrant_collection_info)
-        
+
         self.tool(
             description="Show current collection-to-model mappings and available configurations.",
             annotations=ToolAnnotations(
-                readOnlyHint=True,       # Only reads config
-                destructiveHint=False,   # No modifications
-                idempotentHint=True,     # Static configuration
-                openWorldHint=False      # In-memory config
-            )
+                readOnlyHint=True,  # Only reads config
+                destructiveHint=False,  # No modifications
+                idempotentHint=True,  # Static configuration
+                openWorldHint=False,  # In-memory config
+            ),
         )(qdrant_model_mappings)
 
         self.tool(
             description="Retrieve a single point by ID for inspection or verification after updates.",
             annotations=ToolAnnotations(
-                readOnlyHint=True,       # Only reads data
-                destructiveHint=False,   # No modifications
-                idempotentHint=True,     # Same ID → same result
-                openWorldHint=False      # Local Qdrant instance
-            )
+                readOnlyHint=True,  # Only reads data
+                destructiveHint=False,  # No modifications
+                idempotentHint=True,  # Same ID → same result
+                openWorldHint=False,  # Local Qdrant instance
+            ),
         )(qdrant_get_point)
 
         self.tool(
             description="Update payload fields on existing points without re-embedding (10-100x faster than re-storing). Uses merge semantics. IMPORTANT: Qdrant payloads have nested structure (payload.document + payload.metadata). Use key='metadata' to update metadata fields like sync_status, synced_to_asana. Without key parameter, updates write to root payload level instead of nested metadata.",
             annotations=ToolAnnotations(
-                readOnlyHint=False,      # Modifies database
-                destructiveHint=False,   # Merges, doesn't destroy
-                idempotentHint=True,     # Same update → same result
-                openWorldHint=False      # Local Qdrant instance
-            )
+                readOnlyHint=False,  # Modifies database
+                destructiveHint=False,  # Merges, doesn't destroy
+                idempotentHint=True,  # Same update → same result
+                openWorldHint=False,  # Local Qdrant instance
+            ),
         )(qdrant_update_payload)
 
         self.tool(
             description="Delete points from a Qdrant collection by their IDs. WARNING: PERMANENT operation - cannot be undone. Get point_ids from qdrant_find search results.",
             annotations=ToolAnnotations(
-                readOnlyHint=False,      # Modifies database
-                destructiveHint=True,    # PERMANENT deletion
-                idempotentHint=True,     # Deleting same IDs twice is safe
-                openWorldHint=False      # Local Qdrant instance
-            )
+                readOnlyHint=False,  # Modifies database
+                destructiveHint=True,  # PERMANENT deletion
+                idempotentHint=True,  # Deleting same IDs twice is safe
+                openWorldHint=False,  # Local Qdrant instance
+            ),
         )(qdrant_delete_points)

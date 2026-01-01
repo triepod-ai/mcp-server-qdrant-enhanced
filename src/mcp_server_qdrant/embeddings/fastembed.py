@@ -16,9 +16,9 @@ class FastEmbedProvider(EmbeddingProvider):
     def __init__(self, model_name: str):
         import sys
         #         print(f"[DEBUG] fastembed.py: FastEmbedProvider.__init__ called with model_name={model_name}", file=sys.stderr)
-        
+
         self.model_name = model_name
-        
+
         try:
             #             print(f"[DEBUG] fastembed.py: Creating TextEmbedding with model_name={model_name}", file=sys.stderr)
             self.embedding_model = TextEmbedding(model_name)
@@ -26,6 +26,7 @@ class FastEmbedProvider(EmbeddingProvider):
         except Exception:
             #             print(f"[ERROR] fastembed.py: Failed to create TextEmbedding: {type(e).__name__}: {e}", file=sys.stderr)
             import traceback
+
             traceback.print_exc(file=sys.stderr)
             raise
 

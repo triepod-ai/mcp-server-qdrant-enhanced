@@ -1,6 +1,7 @@
 """
 Enhanced server entry point with collection-specific embedding models.
 """
+
 import sys
 from mcp_server_qdrant.mcp_server import QdrantMCPServer
 from mcp_server_qdrant.enhanced_settings import (
@@ -59,5 +60,6 @@ try:
 except Exception:
     # print(f"[ERROR] enhanced_server.py: Failed to initialize enhanced server: {type(e).__name__}: {e}", file=sys.stderr)
     import traceback
+
     traceback.print_exc(file=sys.stderr)
     raise
