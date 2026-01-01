@@ -1,7 +1,7 @@
 [project]
-name = "mcp-server-qdrant"
+name = "mcp-server-qdrant-enhanced"
 version = "0.7.1"
-description = "MCP server for retrieving context from a Qdrant vector database"
+description = "Enhanced MCP server for Qdrant with GPU acceleration, multi-vector support, and 9 tools"
 readme = "README.md"
 requires-python = ">=3.10"
 license = "Apache-2.0"
