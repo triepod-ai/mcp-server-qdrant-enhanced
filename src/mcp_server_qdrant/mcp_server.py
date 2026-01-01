@@ -376,6 +376,32 @@ class QdrantMCPServer(FastMCP):
             result["timestamp"] = datetime.utcnow().isoformat()
             return result
 
+        async def qdrant_delete_points(
+            ctx: Context,
+            point_ids: Annotated[List[str], Field(description="List of point IDs (UUID hex strings) to delete. Get IDs from qdrant_find search results.")],
+            collection_name: Annotated[str, Field(description="Name of the collection containing the points to delete.")]
+        ) -> Dict[str, Any]:
+            """
+            Delete points from a Qdrant collection by their IDs. PERMANENT operation.
+
+            WARNING: This operation is PERMANENT and cannot be undone. Points and their
+            associated vectors will be permanently removed from the collection.
+
+            :param ctx: The context for the request.
+            :param point_ids: List of point IDs to delete.
+            :param collection_name: Target collection.
+            :return: Deletion result with success status and count.
+            """
+            await ctx.debug(f"Deleting {len(point_ids)} points from {collection_name}")
+
+            result = await self.qdrant_connector.delete_points(
+                point_ids=point_ids,
+                collection_name=collection_name
+            )
+
+            result["timestamp"] = datetime.utcnow().isoformat()
+            return result
+
         # Register tools with enhanced descriptions and annotations
         self.tool(
             description="Store information in Qdrant with automatic collection-specific embedding model selection.",
@@ -456,3 +482,13 @@ class QdrantMCPServer(FastMCP):
                 openWorldHint=False      # Local Qdrant instance
             )
         )(qdrant_update_payload)
+
+        self.tool(
+            description="Delete points from a Qdrant collection by their IDs. WARNING: PERMANENT operation - cannot be undone. Get point_ids from qdrant_find search results.",
+            annotations=ToolAnnotations(
+                readOnlyHint=False,      # Modifies database
+                destructiveHint=True,    # PERMANENT deletion
+                idempotentHint=True,     # Deleting same IDs twice is safe
+                openWorldHint=False      # Local Qdrant instance
+            )
+        )(qdrant_delete_points)

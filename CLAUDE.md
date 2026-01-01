@@ -276,7 +276,7 @@ async def qdrant_store(ctx: Context, information: str, collection_name: str, met
 
 ### Tool Annotations (Updated: 2025-12-23)
 
-All 8 MCP tools now include comprehensive `ToolAnnotations` to help MCP clients (like Claude) better understand tool behavior and optimize usage patterns.
+All 9 MCP tools now include comprehensive `ToolAnnotations` to help MCP clients (like Claude) better understand tool behavior and optimize usage patterns.
 
 **Annotation Structure** (from MCP spec):
 - `readOnlyHint`: Tool only reads data, doesn't modify state
@@ -297,6 +297,7 @@ All 8 MCP tools now include comprehensive `ToolAnnotations` to help MCP clients 
 | `qdrant_model_mappings` | ✅ | ❌ | ✅ | ❌ | Static config display, in-memory data |
 | `qdrant_get_point` | ✅ | ❌ | ✅ | ❌ | Read-only point retrieval by ID, no modifications, local DB |
 | `qdrant_update_payload` | ❌ | ❌ | ✅ | ❌ | Updates payload with merge semantics, doesn't destroy, local DB |
+| `qdrant_delete_points` | ❌ | **✅** | ✅ | ❌ | PERMANENT deletion, cannot be undone, idempotent (safe to retry) |
 
 **Implementation Pattern**:
 ```python

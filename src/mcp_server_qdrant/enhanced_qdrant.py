@@ -539,3 +539,54 @@ class EnhancedQdrantConnector:
                 "collection_name": collection_name,
                 "point_ids": point_ids
             }
+
+    async def delete_points(
+        self,
+        point_ids: List[str],
+        collection_name: str
+    ) -> Dict[str, Any]:
+        """Delete points from a collection by ID.
+
+        Args:
+            point_ids: List of point IDs (UUID hex strings) to delete
+            collection_name: Target collection containing the points
+
+        Returns:
+            Dictionary with success status, deleted count, and collection name
+        """
+        try:
+            if not point_ids:
+                return {
+                    "success": True,
+                    "deleted_count": 0,
+                    "collection_name": collection_name,
+                    "message": "No point IDs provided"
+                }
+
+            collection_exists = await self._client.collection_exists(collection_name)
+            if not collection_exists:
+                return {
+                    "success": False,
+                    "error": f"Collection '{collection_name}' does not exist",
+                    "collection_name": collection_name
+                }
+
+            await self._client.delete(
+                collection_name=collection_name,
+                points_selector=point_ids,
+                wait=True
+            )
+
+            return {
+                "success": True,
+                "deleted_count": len(point_ids),
+                "collection_name": collection_name,
+                "point_ids": point_ids
+            }
+        except Exception as e:
+            return {
+                "success": False,
+                "error": str(e),
+                "collection_name": collection_name,
+                "point_ids": point_ids
+            }
