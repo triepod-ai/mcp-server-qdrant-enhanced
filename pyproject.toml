@@ -27,6 +27,9 @@ dev-dependencies = [
     "ruff>=0.8.0",
 ]
 
+[tool.hatch.build.targets.wheel]
+packages = ["src/mcp_server_qdrant"]
+
 [project.scripts]
 mcp-server-qdrant = "mcp_server_qdrant.main:main"
 mcp-server-qdrant-enhanced = "mcp_server_qdrant.enhanced_main:main"
